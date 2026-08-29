@@ -49,11 +49,14 @@ export default async function MatchesPage() {
 
   const { data: myPicks } = await supabase
     .from("match_predictions")
-    .select("match_id, predicted_home_sets, predicted_away_sets")
+    .select("match_id, predicted_home_sets, predicted_away_sets, updated_at")
     .eq("user_id", user.id);
 
   const pickByMatch = new Map(
-    (myPicks ?? []).map((p) => [p.match_id, `${p.predicted_home_sets}-${p.predicted_away_sets}`])
+    (myPicks ?? []).map((p) => [
+      p.match_id,
+      { score: `${p.predicted_home_sets}-${p.predicted_away_sets}`, updatedAt: p.updated_at as string },
+    ])
   );
 
   const pick = (t: { name: string; name_pl: string | null } | null) =>
@@ -69,11 +72,20 @@ export default async function MatchesPage() {
       // in the schedule as TBD; `pending` keeps them out of the predictable list.
       const pending = !home || !away;
 
-      const myPick = pickByMatch.get(m.id) ?? null;
+      const entry = pickByMatch.get(m.id) ?? null;
+      const myPick = entry?.score ?? null;
+      const finished = m.home_sets !== null && m.away_sets !== null;
+
+      // Mirrors compute_scores(): a pick only counts if it was saved before that match started.
+      // Without this the page could show points the leaderboard never awarded — reachable if a
+      // provisional knockout kick-off is later corrected to an earlier time.
+      const qualifies =
+        !!entry && !!m.scheduled_at && new Date(entry.updatedAt) < new Date(m.scheduled_at);
+
       let points: number | null = null;
-      if (myPick && m.home_sets !== null && m.away_sets !== null) {
+      if (myPick && finished) {
         const [ph, pa] = myPick.split("-").map(Number);
-        points = matchPoints(ph, pa, m.home_sets, m.away_sets);
+        points = qualifies ? matchPoints(ph, pa, m.home_sets!, m.away_sets!) : 0;
       }
 
       const groupCode = m.stage === "group" ? groupCodeById.get(m.group_id as number) ?? null : null;
@@ -95,6 +107,8 @@ export default async function MatchesPage() {
         started: m.scheduled_at ? new Date(m.scheduled_at).getTime() <= now : false,
         pick: myPick,
         points,
+        finished,
+        counted: !myPick || qualifies,
       };
     })
     .filter(Boolean) as MatchRow[];

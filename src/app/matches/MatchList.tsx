@@ -18,6 +18,8 @@ export type MatchRow = {
   started: boolean;
   pick: string | null; // "3-1"
   points: number | null;
+  finished: boolean;
+  counted: boolean;
 };
 
 const SCORES = ["3-0", "3-1", "3-2", "2-3", "1-3", "0-3"];
@@ -112,7 +114,15 @@ function MatchTable({
               )}
               {!editable && (
                 <td className="py-2 text-right font-medium">
-                  {m.points === null ? <span className="text-gray-300">—</span> : m.points}
+                  {m.points === null ? (
+                    <span className="text-gray-300">—</span>
+                  ) : m.counted ? (
+                    m.points
+                  ) : (
+                    <span className="text-gray-400" title={t.notCountedHint}>
+                      {m.points} <span className="text-xs">({t.notCounted})</span>
+                    </span>
+                  )}
                 </td>
               )}
             </tr>
@@ -179,7 +189,11 @@ export default function MatchList({
   const knockoutUpcoming = upcoming.filter((m) => !m.groupCode);
   if (knockoutUpcoming.length > 0) upcomingBuckets.push({ code: null, rows: knockoutUpcoming });
   const pending = matches.filter((m) => !m.started && m.pending);
-  const played = matches.filter((m) => m.started);
+  // `started` only means kick-off has passed. A match with no score yet is in progress, not
+  // played — showing it under "Rozegrane" with an empty result read as a data problem.
+  const awaitingResult = matches.filter((m) => m.started && !m.finished);
+  const played = matches.filter((m) => m.started && m.finished);
+  const totalPoints = played.reduce((sum, m) => sum + (m.points ?? 0), 0);
 
   return (
     <div className="flex flex-col gap-10">
@@ -218,9 +232,29 @@ export default function MatchList({
         </section>
       )}
 
+      {awaitingResult.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">{t.awaitingResult}</h2>
+          <p className="mb-3 text-sm text-gray-500">{t.awaitingResultHint}</p>
+          <MatchTable
+            rows={awaitingResult}
+            editable={false}
+            picks={picks}
+            setPick={setPick}
+            t={t}
+            locale={locale}
+          />
+        </section>
+      )}
+
       {played.length > 0 && (
         <section>
-          <h2 className="mb-1 text-lg font-semibold">{t.played}</h2>
+          <div className="mb-1 flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold">{t.played}</h2>
+            <span className="text-sm text-gray-600">
+              {t.yourPoints}: <span className="font-semibold">{totalPoints}</span>
+            </span>
+          </div>
           <p className="mb-3 text-sm text-gray-500">{t.locked}</p>
           <MatchTable
             rows={played}
