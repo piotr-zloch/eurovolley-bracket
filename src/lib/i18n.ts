@@ -209,13 +209,20 @@ const pl = {
         "10 punktów minus 4 za każde miejsce różnicy między Twoim typem a końcową pozycją drużyny. Wynik może być ujemny.",
       groupsExample:
         "Przykład: typujesz drużynę na 1. miejsce. Zajmie 1. — 10 pkt. Zajmie 2. — 6 pkt. Zajmie 3. — 2 pkt. Zajmie 4. — −2 pkt.",
-      bracketHeading: "Drabinka — za każdy trafiony typ",
+      bracketHeading: "Drabinka — zwycięzca meczu",
+      bracketWinnerDef:
+        "Punkty liczymy osobno dla każdego meczu drabinki. Liczy się tylko to, czy wskazana przez Ciebie drużyna wygrała ten mecz — niezależnie od tego, którą drogą do niego dotarła. Jeśli typowałeś Włochy z 1. miejsca w grupie, a zajęły 3., ale i tak wygrały ten ćwierćfinał — punkty są Twoje.",
+      bracketPairHeading: "Drabinka — trafiona para",
+      bracketPairDef:
+        "Osobne punkty za trafienie obu drużyn w danym meczu, niezależnie od tego, kto wygrał. Kolejność nie ma znaczenia. Za trafioną parę dostajesz połowę punktów za zwycięzcę tego meczu.",
       bracketR16: "1/8 finału",
       bracketQF: "Ćwierćfinał",
       bracketSF: "Półfinał",
       bracketBronze: "Mecz o 3. miejsce",
       bracketFinal: "Finał",
-      bracketWrong: "Nietrafiony typ nie odejmuje punktów — daje 0.",
+      pairCol: "Para",
+      winnerCol: "Zwycięzca",
+      bracketWrong: "Nietrafiony typ nie odejmuje punktów — daje 0. Za jeden mecz możesz zdobyć punkty i za parę, i za zwycięzcę.",
       deadlineHeading: "Termin",
       deadlineRule:
         "Typ turnieju liczy się do rankingu tylko wtedy, gdy został zapisany przed pierwszą piłką turnieju (9 września 2026, 18:00 czasu środkowoeuropejskiego). Po tym terminie nadal możesz zmieniać swój typ, ale zmienione pozycje przestają liczyć się do rankingu.",
@@ -456,13 +463,20 @@ const en: Dict = {
         "10 points minus 4 for every place between your prediction and where the team actually finishes. The result can be negative.",
       groupsExample:
         "Example: you predict a team finishes 1st. They finish 1st — 10 pts. 2nd — 6 pts. 3rd — 2 pts. 4th — −2 pts.",
-      bracketHeading: "Bracket — per correct pick",
+      bracketHeading: "Bracket — match winner",
+      bracketWinnerDef:
+        "Each knockout match is scored on its own. All that matters is whether the team you named won that match — regardless of the route it took to get there. If you had Italy topping their group and they finished 3rd but still won that quarterfinal, you score.",
+      bracketPairHeading: "Bracket — correct pairing",
+      bracketPairDef:
+        "Separate points for naming both teams in a match, whoever wins it. Order doesn't matter. A correct pairing is worth half the winner points for that match.",
       bracketR16: "Round of 16",
       bracketQF: "Quarterfinal",
       bracketSF: "Semifinal",
       bracketBronze: "Bronze medal match",
       bracketFinal: "Final",
-      bracketWrong: "A wrong pick costs nothing — it simply scores 0.",
+      pairCol: "Pairing",
+      winnerCol: "Winner",
+      bracketWrong: "A wrong pick costs nothing — it simply scores 0. A single match can earn you both the pairing and the winner points.",
       deadlineHeading: "Deadline",
       deadlineRule:
         "A tournament prediction only counts toward the leaderboard if it was saved before the tournament's first ball (9 September 2026, 18:00 CEST). You can still change your prediction afterwards, but anything edited after that point stops counting.",

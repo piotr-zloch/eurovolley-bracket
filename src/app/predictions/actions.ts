@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type GroupOrder = { groupId: number; teamIds: number[] };
-export type BracketPick = { bracket_slot: string; predicted_winner_team_id: number };
+export type BracketPick = {
+  bracket_slot: string;
+  /** Null when the pairing is known but no winner has been chosen — that still earns pair points. */
+  predicted_winner_team_id: number | null;
+  predicted_home_team_id: number | null;
+  predicted_away_team_id: number | null;
+};
 
 /**
  * Saves the whole prediction in one go — every group's finishing order plus every knockout
@@ -59,6 +65,8 @@ export async function saveAllPredictions(
       tournament_id: tournamentId,
       bracket_slot: p.bracket_slot,
       predicted_winner_team_id: p.predicted_winner_team_id,
+      predicted_home_team_id: p.predicted_home_team_id,
+      predicted_away_team_id: p.predicted_away_team_id,
     }));
     const { error } = await supabase
       .from("bracket_predictions")

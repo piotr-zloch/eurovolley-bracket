@@ -121,8 +121,22 @@ prefixes would buy nothing and would complicate the Supabase redirect allow-list
 
 ## The two competitions
 
-**1. Tournament prediction** — group order + bracket. Scored `10 - 4×|predicted - actual|` per
-team (negatives allowed), and 4/8/16/16/32 for a correct R16 / QF / SF / bronze / final pick.
+**1. Tournament prediction** — group order + bracket. Group standings score
+`10 - 4×|predicted - actual|` per team (negatives allowed). Each knockout match scores twice,
+independently:
+
+| | Pairing | Winner |
+|---|---|---|
+| Round of 16 | 2 | 4 |
+| Quarterfinal | 4 | 8 |
+| Semifinal | 8 | 16 |
+| Bronze | 8 | 16 |
+| Final | 16 | 32 |
+
+The **winner** is scored per slot and is path-independent — naming the team that actually wins
+that match scores, however it got there. The **pairing** is scored on the unordered set of both
+teams, whether or not a winner was also picked (a round-of-16 line-up follows from the group
+order alone, so it can score with no winner chosen).
 
 **2. Match predictions** — the set score of each individual match:
 

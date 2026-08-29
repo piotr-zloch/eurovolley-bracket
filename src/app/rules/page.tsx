@@ -27,14 +27,34 @@ export default async function RulesPage() {
         <p className="mb-2 text-sm">{t.groupsRule}</p>
         <p className="mb-6 rounded bg-gray-50 p-3 text-sm text-gray-600">{t.groupsExample}</p>
 
-        <h3 className="mb-2 font-medium">{t.bracketHeading}</h3>
+        <h3 className="mb-1 font-medium">{t.bracketHeading}</h3>
+        <p className="mb-3 text-sm text-gray-600">{t.bracketWinnerDef}</p>
+
+        <h3 className="mb-1 font-medium">{t.bracketPairHeading}</h3>
+        <p className="mb-3 text-sm text-gray-600">{t.bracketPairDef}</p>
+
         <table className="mb-2 w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs text-gray-500">
+              <th className="py-1 pr-4 font-medium"> </th>
+              <th className="py-1 text-right font-medium">{t.pairCol}</th>
+              <th className="py-1 text-right font-medium">{t.winnerCol}</th>
+            </tr>
+          </thead>
           <tbody>
-            <Row label={t.bracketR16} points={`4 ${pts}`} />
-            <Row label={t.bracketQF} points={`8 ${pts}`} />
-            <Row label={t.bracketSF} points={`16 ${pts}`} />
-            <Row label={t.bracketBronze} points={`16 ${pts}`} />
-            <Row label={t.bracketFinal} points={`32 ${pts}`} />
+            {[
+              [t.bracketR16, 2, 4],
+              [t.bracketQF, 4, 8],
+              [t.bracketSF, 8, 16],
+              [t.bracketBronze, 8, 16],
+              [t.bracketFinal, 16, 32],
+            ].map(([label, pair, winner]) => (
+              <tr key={label as string} className="border-b last:border-0">
+                <td className="py-2 pr-4">{label as string}</td>
+                <td className="py-2 text-right whitespace-nowrap">{`${pair} ${pts}`}</td>
+                <td className="py-2 text-right font-medium whitespace-nowrap">{`${winner} ${pts}`}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
         <p className="text-sm text-gray-500">{t.bracketWrong}</p>

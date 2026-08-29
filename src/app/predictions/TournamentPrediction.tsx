@@ -161,12 +161,16 @@ export default function TournamentPrediction({
           groupId: g.id,
           teamIds: draft.orders[g.id]?.length ? draft.orders[g.id] : orders[g.id].map((x) => x.id),
         }));
+        // The draft holds only winner picks; pairings are recomputed from the restored group
+        // order on the next render, so a follow-up save fills them in.
         await saveAllPredictions(
           tournamentId,
           restored,
           Object.entries(draft.picks ?? {}).map(([bracket_slot, predicted_winner_team_id]) => ({
             bracket_slot,
             predicted_winner_team_id,
+            predicted_home_team_id: null,
+            predicted_away_team_id: null,
           }))
         );
         clearDraft();
@@ -223,7 +227,7 @@ export default function TournamentPrediction({
 
   // The bracket is derived fresh on every render from the current group order, so dragging a
   // team updates the whole knockout tree immediately — no save required to see the effect.
-  const { rounds, missingGroups, validPicks } = useMemo(() => {
+  const { rounds, missingGroups, validPicks, pairs } = useMemo(() => {
     const missing = new Set<string>();
     const valid: Record<string, number> = {};
 
@@ -291,6 +295,13 @@ export default function TournamentPrediction({
       ],
       missingGroups: [...missing].sort(),
       validPicks: valid,
+      // Every slot whose two teams are known, whether or not a winner was chosen — the pairing
+      // alone is worth points, and for the round of 16 it follows from the groups by itself.
+      pairs: Object.fromEntries(
+        [...round16, ...quarters, ...semis, finalSlot, bronzeSlot]
+          .filter((s) => s.home && s.away)
+          .map((s) => [s.slot, [s.home!.id, s.away!.id] as [number, number]])
+      ),
     };
   }, [orders, picks, groupByCode, t]);
 
@@ -315,6 +326,17 @@ export default function TournamentPrediction({
     setStatus("idle");
   }
 
+  /** One row per slot that has a known pairing or a chosen winner. */
+  function buildBracketRows() {
+    const slots = new Set([...Object.keys(pairs), ...Object.keys(validPicks)]);
+    return [...slots].map((slot) => ({
+      bracket_slot: slot,
+      predicted_winner_team_id: validPicks[slot] ?? null,
+      predicted_home_team_id: pairs[slot]?.[0] ?? null,
+      predicted_away_team_id: pairs[slot]?.[1] ?? null,
+    }));
+  }
+
   async function handleSave() {
     if (!isLoggedIn) {
       // Stash first, then send them to sign up — the draft is what they come back to.
@@ -333,10 +355,7 @@ export default function TournamentPrediction({
       await saveAllPredictions(
         tournamentId,
         groups.map((g) => ({ groupId: g.id, teamIds: orders[g.id].map((x) => x.id) })),
-        Object.entries(validPicks).map(([bracket_slot, predicted_winner_team_id]) => ({
-          bracket_slot,
-          predicted_winner_team_id,
-        }))
+        buildBracketRows()
       );
       setStatus("saved");
       setDirty(false);
