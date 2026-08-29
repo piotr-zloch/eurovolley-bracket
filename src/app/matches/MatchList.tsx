@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { Dict } from "@/lib/i18n";
+import { fmt, type Dict } from "@/lib/i18n";
 import { saveMatchPredictions } from "./actions";
 
 export type MatchRow = {
   id: number;
   label: string;
+  groupCode: string | null;
   home: string;
   away: string;
   kickoff: string | null;
@@ -44,9 +45,11 @@ function MatchTable({
   setPick,
   t,
   locale,
+  hideLabel = false,
 }: {
   rows: MatchRow[];
   editable: boolean;
+  hideLabel?: boolean;
   picks: Record<number, string>;
   setPick: (id: number, value: string) => void;
   t: Dict["matches"];
@@ -71,7 +74,9 @@ function MatchTable({
                   {m.home} – {m.away}
                 </div>
                 <div className="text-xs text-gray-400">
-                  {[m.label, m.venue, formatKickoff(m.kickoff, locale)].filter(Boolean).join(" · ")}
+                  {[hideLabel ? null : m.label, m.venue, formatKickoff(m.kickoff, locale)]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </div>
               </td>
               <td className="py-2">
@@ -164,6 +169,15 @@ export default function MatchList({
   }
 
   const upcoming = matches.filter((m) => !m.started && !m.pending);
+
+  // Groups first in A–D order, then any knockout match already carrying teams.
+  const upcomingBuckets: { code: string | null; rows: MatchRow[] }[] = [];
+  const codes = [...new Set(upcoming.map((m) => m.groupCode).filter(Boolean))].sort() as string[];
+  codes.forEach((code) => {
+    upcomingBuckets.push({ code, rows: upcoming.filter((m) => m.groupCode === code) });
+  });
+  const knockoutUpcoming = upcoming.filter((m) => !m.groupCode);
+  if (knockoutUpcoming.length > 0) upcomingBuckets.push({ code: null, rows: knockoutUpcoming });
   const pending = matches.filter((m) => !m.started && m.pending);
   const played = matches.filter((m) => m.started);
 
@@ -171,8 +185,28 @@ export default function MatchList({
     <div className="flex flex-col gap-10">
       {upcoming.length > 0 && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">{t.upcoming}</h2>
-          <MatchTable rows={upcoming} editable picks={picks} setPick={setPick} t={t} locale={locale} />
+          <h2 className="mb-4 text-lg font-semibold">{t.upcoming}</h2>
+          {/* Bucketed per tournament group: 60 group matches in one chronological list is a lot
+              to scan when you mainly care about one or two groups. Order within each stays by
+              kick-off. Knockout matches whose teams are known get their own bucket at the end. */}
+          <div className="flex flex-col gap-8">
+            {upcomingBuckets.map(({ code, rows }) => (
+              <div key={code ?? "ko"}>
+                <h3 className="mb-2 font-medium">
+                  {code ? fmt(dict.groupLabel, { code }) : t.knockoutLabel}
+                </h3>
+                <MatchTable
+                  rows={rows}
+                  editable
+                  hideLabel={code !== null}
+                  picks={picks}
+                  setPick={setPick}
+                  t={t}
+                  locale={locale}
+                />
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

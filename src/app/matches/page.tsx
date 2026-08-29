@@ -76,14 +76,15 @@ export default async function MatchesPage() {
         points = matchPoints(ph, pa, m.home_sets, m.away_sets);
       }
 
-      const label =
-        m.stage === "group"
-          ? fmt(dict.groupLabel, { code: groupCodeById.get(m.group_id as number) ?? "?" })
-          : (m.bracket_slot as string) ?? dict.matches.knockoutLabel;
+      const groupCode = m.stage === "group" ? groupCodeById.get(m.group_id as number) ?? null : null;
+      const label = groupCode
+        ? fmt(dict.groupLabel, { code: groupCode })
+        : (m.bracket_slot as string) ?? dict.matches.knockoutLabel;
 
       return {
         id: m.id,
         label,
+        groupCode,
         venue: (m.venue as string) ?? null,
         pending,
         home: home ?? "—",
