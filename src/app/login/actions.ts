@@ -48,10 +48,18 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
 export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = ((formData.get("email") as string) ?? "").trim();
   const password = (formData.get("password") as string) ?? "";
+  const confirmPassword = (formData.get("confirm_password") as string) ?? "";
   const username = normalizeUsername(formData.get("username") as string);
+  // Passwords are never echoed back into the form, so only these are preserved on error.
   const keep = { email, username };
 
   const dict = await getDict();
+
+  // Checked on the server, not just in the browser: the client can be bypassed, and a mismatch
+  // here would otherwise create an account whose password isn't what the user thought they typed.
+  if (password !== confirmPassword) {
+    return { error: dict.auth.errPasswordMismatch, values: keep };
+  }
 
   // Enforced server-side, not just via the form's `required`: the username is the only public
   // identity in the app and must never fall back to the email.
@@ -60,12 +68,10 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
 
   const supabase = await createClient();
 
-  const { data: taken } = await supabase
-    .from("profiles")
-    .select("id")
-    .ilike("username", username)
-    .maybeSingle();
-  if (taken) return { error: dict.auth.errUsernameTaken, values: keep };
+  // Via an RPC rather than a direct select: the caller is anonymous here and RLS hides
+  // `profiles` from them, so a plain query always came back empty and never caught a clash.
+  const { data: available } = await supabase.rpc("username_available", { candidate: username });
+  if (available === false) return { error: dict.auth.errUsernameTaken, values: keep };
 
   const origin = (await headers()).get("origin") ?? "";
 

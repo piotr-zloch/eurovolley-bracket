@@ -58,6 +58,15 @@ export default function SignupForm({ dict }: { dict: Dict }) {
           autoComplete="new-password"
           dict={dict}
         />
+        <PasswordField
+          id="confirm_password"
+          name="confirm_password"
+          label={t.confirmPassword}
+          required
+          minLength={8}
+          autoComplete="new-password"
+          dict={dict}
+        />
         <SubmitButton pending={pending} label={t.signUp} pendingLabel={t.signingUp} />
       </form>
     </AuthCard>
