@@ -7,7 +7,13 @@ import { USERNAME_MAX, USERNAME_MIN } from "@/lib/username";
 import { AuthCard, Field, PasswordField, SubmitButton } from "@/components/auth/AuthShell";
 import { signup, type AuthState } from "@/app/login/actions";
 
-export default function SignupForm({ dict }: { dict: Dict }) {
+export default function SignupForm({
+  dict,
+  fromPredictions = false,
+}: {
+  dict: Dict;
+  fromPredictions?: boolean;
+}) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(signup, {});
   const t = dict.auth;
 
@@ -16,10 +22,11 @@ export default function SignupForm({ dict }: { dict: Dict }) {
       title={dict.appName}
       subtitle={t.signUpTitle}
       error={state.error}
+      message={fromPredictions ? t.draftWaiting : undefined}
       footer={
         <>
           {t.haveAccount}{" "}
-          <Link href="/login" className="text-blue-600 underline">
+          <Link href={fromPredictions ? "/login?from=predictions" : "/login"} className="text-blue-600 underline">
             {t.logIn}
           </Link>
         </>

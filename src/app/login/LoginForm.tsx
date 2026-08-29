@@ -6,7 +6,15 @@ import type { Dict } from "@/lib/i18n";
 import { AuthCard, Field, PasswordField, SubmitButton } from "@/components/auth/AuthShell";
 import { login, type AuthState } from "./actions";
 
-export default function LoginForm({ dict, message }: { dict: Dict; message?: string }) {
+export default function LoginForm({
+  dict,
+  message,
+  fromPredictions = false,
+}: {
+  dict: Dict;
+  message?: string;
+  fromPredictions?: boolean;
+}) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(login, {});
   const t = dict.auth;
 
@@ -15,11 +23,11 @@ export default function LoginForm({ dict, message }: { dict: Dict; message?: str
       title={dict.appName}
       subtitle={t.signInTitle}
       error={state.error}
-      message={message}
+      message={message ?? (fromPredictions ? t.draftWaitingLogin : undefined)}
       footer={
         <>
           {t.noAccount}{" "}
-          <Link href="/signup" className="text-blue-600 underline">
+          <Link href={fromPredictions ? "/signup?from=predictions" : "/signup"} className="text-blue-600 underline">
             {t.signUp}
           </Link>
         </>
