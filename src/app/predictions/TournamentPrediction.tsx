@@ -28,6 +28,22 @@ type Team = { id: number; name: string };
 type Group = { id: number; name: string; code: string; teams: Team[] };
 type Slot = { slot: string; home: Team | null; away: Team | null };
 
+/**
+ * Left-to-right order for the bracket display, chosen so each match sits directly above the two
+ * that feed it. CEV's numbering isn't sequential across the bracket (QF1 takes EF1 and EF4, and
+ * the semifinals cross QF1xQF4 / QF2xQF3), so drawing the slots in numeric order would put every
+ * quarterfinal above the wrong pair — a picture that quietly states the wrong thing.
+ */
+const DISPLAY_ORDER: Record<string, string[]> = {
+  r16: ["EF1", "EF4", "EF6", "EF7", "EF2", "EF3", "EF5", "EF8"],
+  qf: ["QF1", "QF4", "QF2", "QF3"],
+  sf: ["SF1", "SF2"],
+};
+
+function inDisplayOrder(slots: Slot[], order: string[]): Slot[] {
+  return [...slots].sort((a, b) => order.indexOf(a.slot) - order.indexOf(b.slot));
+}
+
 function SortableTeamRow({
   teamId,
   name,
@@ -188,11 +204,10 @@ export default function TournamentPrediction({
 
     return {
       rounds: [
-        { title: t.roundOf16, slots: round16 },
-        { title: t.quarterfinals, slots: quarters },
-        { title: t.semifinals, slots: semis },
-        { title: t.final, slots: [finalSlot] },
-        { title: t.bronze, slots: [bronzeSlot] },
+        { title: t.roundOf16, slots: inDisplayOrder(round16, DISPLAY_ORDER.r16) },
+        { title: t.quarterfinals, slots: inDisplayOrder(quarters, DISPLAY_ORDER.qf) },
+        { title: t.semifinals, slots: inDisplayOrder(semis, DISPLAY_ORDER.sf) },
+        { title: t.finalRow, slots: [finalSlot, bronzeSlot] },
       ],
       missingGroups: [...missing].sort(),
       validPicks: valid,
@@ -288,41 +303,50 @@ export default function TournamentPrediction({
           </p>
         )}
 
-        <div className="flex flex-col gap-6">
-          {rounds.map((round) => (
-            <div key={round.title}>
-              <h3 className="mb-2 font-medium">{round.title}</h3>
-              <div className="flex flex-wrap gap-3">
-                {round.slots.map((s) => {
-                  const chosen = validPicks[s.slot];
-                  return (
-                    <div key={s.slot} className="flex w-44 flex-col gap-1 rounded border p-2 text-sm">
-                      <span className="text-xs text-gray-400">{s.slot}</span>
-                      {[s.home, s.away].map((team, side) =>
-                        team ? (
-                          <button
-                            key={side}
-                            onClick={() => pick(s.slot, team.id)}
-                            className={`rounded px-2 py-1 text-left ${
-                              chosen === team.id
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 hover:bg-gray-200"
-                            }`}
-                          >
-                            {label(team)}
-                          </button>
-                        ) : (
-                          <span key={side} className="rounded bg-gray-50 px-2 py-1 text-gray-300">
-                            {t.tbd}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  );
-                })}
+        {/* Rounds read top-to-bottom, each on a single row. Every row is divided into the same
+            number of equal cells as the round of 16 has matches, and each card is centred in its
+            share — so a quarterfinal sits over the two matches that feed it, like a real bracket.
+            The track is wider than the page on purpose and scrolls sideways on narrow screens. */}
+        <div className="overflow-x-auto pb-2">
+          <div className="flex min-w-[1000px] flex-col gap-6">
+            {rounds.map((round) => (
+              <div key={round.title}>
+                <h3 className="mb-2 font-medium">{round.title}</h3>
+                <div className="flex gap-2">
+                  {round.slots.map((s) => {
+                    const chosen = validPicks[s.slot];
+                    return (
+                      <div key={s.slot} className="flex flex-1 justify-center">
+                        <div className="flex w-[118px] flex-col gap-1 rounded border p-2 text-sm">
+                          <span className="text-xs text-gray-400">{s.slot}</span>
+                          {[s.home, s.away].map((team, side) =>
+                            team ? (
+                              <button
+                                key={side}
+                                onClick={() => pick(s.slot, team.id)}
+                                className={`truncate rounded px-2 py-1 text-left ${
+                                  chosen === team.id
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+                                title={label(team)}
+                              >
+                                {label(team)}
+                              </button>
+                            ) : (
+                              <span key={side} className="rounded bg-gray-50 px-2 py-1 text-gray-300">
+                                {t.tbd}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 

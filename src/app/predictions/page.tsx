@@ -20,7 +20,7 @@ export default async function PredictionsPage() {
 
   if (!tournament) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mx-auto max-w-5xl px-4 py-10">
         <p>{dict.common.noTournament}</p>
       </div>
     );
@@ -76,7 +76,7 @@ export default async function PredictionsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold">{dict.predictions.title}</h1>
       <p className="mb-8 text-sm text-gray-500">{dict.predictions.intro}</p>
 
