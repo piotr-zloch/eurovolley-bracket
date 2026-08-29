@@ -29,3 +29,19 @@ export async function requireUser() {
 
   return { supabase, user, username: profile.username as string };
 }
+
+
+/**
+ * For pages that work signed out. Returns the user when there is one, without redirecting.
+ *
+ * Unlike requireUser() this does NOT enforce the username gate — a visitor filling in a bracket
+ * hasn't chosen one yet, and pushing them to /welcome before they've seen anything is exactly
+ * the wall we're trying to remove.
+ */
+export async function getOptionalUser() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return { supabase, user };
+}

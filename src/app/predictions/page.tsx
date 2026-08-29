@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/require-user";
+import { getOptionalUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import TournamentPrediction from "./TournamentPrediction";
@@ -7,7 +7,7 @@ import TournamentPrediction from "./TournamentPrediction";
 type Team = { id: number; name: string };
 
 export default async function PredictionsPage() {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await getOptionalUser();
   const dict = await getDict();
   const locale = await getLocale();
 
@@ -50,11 +50,15 @@ export default async function PredictionsPage() {
       .filter(Boolean) as Team[],
   }));
 
-  const { data: savedStandings } = await supabase
-    .from("standings_predictions")
-    .select("group_id, team_id, predicted_position")
-    .eq("user_id", user.id)
-    .eq("tournament_id", tournament.id);
+  // Signed-out visitors have nothing stored server-side; their draft is restored from the
+  // browser once the component mounts.
+  const { data: savedStandings } = user
+    ? await supabase
+        .from("standings_predictions")
+        .select("group_id, team_id, predicted_position")
+        .eq("user_id", user.id)
+        .eq("tournament_id", tournament.id)
+    : { data: null };
 
   const initialOrders: Record<number, number[]> = {};
   (savedStandings ?? [])
@@ -64,11 +68,13 @@ export default async function PredictionsPage() {
       (initialOrders[row.group_id] ??= []).push(row.team_id);
     });
 
-  const { data: savedPicks } = await supabase
-    .from("bracket_predictions")
-    .select("bracket_slot, predicted_winner_team_id")
-    .eq("user_id", user.id)
-    .eq("tournament_id", tournament.id);
+  const { data: savedPicks } = user
+    ? await supabase
+        .from("bracket_predictions")
+        .select("bracket_slot, predicted_winner_team_id")
+        .eq("user_id", user.id)
+        .eq("tournament_id", tournament.id)
+    : { data: null };
 
   const initialPicks: Record<string, number> = {};
   (savedPicks ?? []).forEach((p) => {
@@ -89,7 +95,14 @@ export default async function PredictionsPage() {
           initialOrders={initialOrders}
           initialPicks={initialPicks}
           dict={dict}
+          isLoggedIn={!!user}
         />
+      )}
+
+      {!user && (
+        <p className="mt-8 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+          {dict.predictions.anonNotice}
+        </p>
       )}
 
       <p className="mt-8 text-sm text-gray-500">

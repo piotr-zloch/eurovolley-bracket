@@ -52,6 +52,25 @@ Hosted on Vercel, auto-deploying from `master` on GitHub: `piotr-zloch/eurovolle
   is seeded with the earliest plausible start (locking early is safe; locking late would let
   someone predict a match already in progress).
 
+## Try before signing up
+
+`/` is a landing page for signed-out visitors (signed-in ones go straight to `/predictions`).
+The prediction page itself works without an account: picks are held in `localStorage`
+(`src/lib/draft.ts`), and Save is the conversion point — it stashes the draft and sends the
+visitor to sign up, after which the draft is written to the database and cleared.
+
+localStorage rather than anonymous database rows: no per-visitor rows to garbage-collect or spam,
+and the draft survives the email-confirmation round trip, where the user leaves the site entirely.
+It cannot survive confirming the email in a *different* browser.
+
+A draft is only auto-saved if it carries `pendingSave`, set when the visitor actually pressed
+Save while signed out. Otherwise an existing user who browsed signed out and logged back in would
+have their stored prediction silently overwritten.
+
+This required making reference data (tournament, teams, groups, fixtures) publicly readable —
+all of it already published by CEV. Predictions, profiles, scores, groups and membership remain
+invisible without a session, and all writes remain admin-only.
+
 ## User flow
 
 Login/signup → **`/predictions`**, which holds the group stage and the knockout bracket together

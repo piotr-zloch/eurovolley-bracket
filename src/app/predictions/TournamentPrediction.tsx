@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragEndEvent,
@@ -22,6 +23,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { QF_SOURCES, ROUND_OF_16_TEMPLATE, SF_SOURCES } from "@/lib/knockout-template";
 import { fmt, type Dict } from "@/lib/i18n";
+import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 import { saveAllPredictions } from "./actions";
 
 type Team = { id: number; name: string };
@@ -87,13 +89,16 @@ export default function TournamentPrediction({
   initialOrders,
   initialPicks,
   dict,
+  isLoggedIn,
 }: {
   tournamentId: number;
   groups: Group[];
   initialOrders: Record<number, number[]>;
   initialPicks: Record<string, number>;
   dict: Dict;
+  isLoggedIn: boolean;
 }) {
+  const router = useRouter();
   const t = dict.predictions;
 
   const [orders, setOrders] = useState<Record<number, Team[]>>(() => {
@@ -109,6 +114,81 @@ export default function TournamentPrediction({
   const [picks, setPicks] = useState<Record<string, number>>(initialPicks);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [dirty, setDirty] = useState(false);
+
+  const flushed = useRef(false);
+  const validPicksRef = useRef<Record<string, number>>({});
+
+  function currentOrderIds() {
+    return groups.map((g) => ({ groupId: g.id, teamIds: orders[g.id].map((x) => x.id) }));
+  }
+
+  // localStorage can only be read after mount — touching it during render would produce markup
+  // that differs from the server's and break hydration.
+  useEffect(() => {
+    const draft = readDraft();
+    if (!draft || draft.tournamentId !== tournamentId) return;
+
+    if (!isLoggedIn) {
+      // Signed out: restore whatever they had filled in before.
+      setOrders((prev) => {
+        const next = { ...prev };
+        groups.forEach((g) => {
+          const ids = draft.orders[g.id];
+          if (ids?.length) {
+            next[g.id] = [...g.teams].sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+          }
+        });
+        return next;
+      });
+      setPicks(draft.picks ?? {});
+      setDirty(true);
+      return;
+    }
+
+    // Signed in, and this draft was explicitly submitted while signed out — the return trip
+    // from signing up. Write it through and drop it. An unsubmitted draft is discarded instead
+    // of overwriting whatever the account already has stored.
+    if (!draft.pendingSave) {
+      clearDraft();
+      return;
+    }
+    if (flushed.current) return;
+    flushed.current = true;
+    (async () => {
+      setStatus("saving");
+      try {
+        const restored = groups.map((g) => ({
+          groupId: g.id,
+          teamIds: draft.orders[g.id]?.length ? draft.orders[g.id] : orders[g.id].map((x) => x.id),
+        }));
+        await saveAllPredictions(
+          tournamentId,
+          restored,
+          Object.entries(draft.picks ?? {}).map(([bracket_slot, predicted_winner_team_id]) => ({
+            bracket_slot,
+            predicted_winner_team_id,
+          }))
+        );
+        clearDraft();
+        setStatus("saved");
+        router.refresh();
+      } catch {
+        setStatus("error");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, tournamentId]);
+
+  // Keep the signed-out draft current as they edit.
+  useEffect(() => {
+    if (isLoggedIn || !dirty) return;
+    writeDraft({
+      tournamentId,
+      orders: Object.fromEntries(currentOrderIds().map((o) => [o.groupId, o.teamIds])),
+      picks: validPicksRef.current,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders, picks, isLoggedIn, dirty]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -214,6 +294,8 @@ export default function TournamentPrediction({
     };
   }, [orders, picks, groupByCode, t]);
 
+  validPicksRef.current = validPicks;
+
   function handleDragEnd(groupId: number, event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -234,6 +316,18 @@ export default function TournamentPrediction({
   }
 
   async function handleSave() {
+    if (!isLoggedIn) {
+      // Stash first, then send them to sign up — the draft is what they come back to.
+      writeDraft({
+        tournamentId,
+        orders: Object.fromEntries(currentOrderIds().map((o) => [o.groupId, o.teamIds])),
+        picks: validPicks,
+        pendingSave: true,
+      });
+      router.push("/signup?from=predictions");
+      return;
+    }
+
     setStatus("saving");
     try {
       await saveAllPredictions(
@@ -246,6 +340,7 @@ export default function TournamentPrediction({
       );
       setStatus("saved");
       setDirty(false);
+      clearDraft();
     } catch {
       setStatus("error");
     }
@@ -356,7 +451,7 @@ export default function TournamentPrediction({
           className="rounded bg-blue-600 px-5 py-2.5 font-medium text-white disabled:opacity-60"
           disabled={status === "saving"}
         >
-          {status === "saving" ? t.saving : t.save}
+          {status === "saving" ? t.saving : isLoggedIn ? t.save : t.saveSignUp}
         </button>
         {status === "saved" && <span className="text-sm text-green-600">{t.saved}</span>}
         {status === "error" && <span className="text-sm text-red-600">{t.saveError}</span>}
