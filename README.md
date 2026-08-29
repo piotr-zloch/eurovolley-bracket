@@ -3,6 +3,22 @@
 Next.js + Supabase app for group prediction pools: users sign up, create/join private groups,
 predict group-stage standings and fill a knockout bracket, then get scored against real results.
 
+## Deployment
+
+Live at **https://eurovolley-bracket.vercel.app** (Vercel, auto-deploys from `master` on GitHub:
+`piotr-zloch/eurovolley-bracket`).
+
+- **Code changes**: `git push` → Vercel builds and swaps in the new version (~1–2 min). A failed
+  build leaves the previous version serving. Non-`master` branches get their own preview URL.
+- **Database changes are NOT deployed by Vercel.** Apply them yourself with
+  `supabase db push --linked`, and do that *before* pushing code that depends on the new schema.
+- **Env vars** live in the Vercel dashboard (`NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`); changing them needs a redeploy to take effect.
+- **Supabase auth URLs** are set to the production domain (Site URL + redirect allow-list, which
+  also permits `*-*.vercel.app` previews and `localhost:3000`).
+- The **results scraper** runs on your machine, not on Vercel — see
+  `../Scrappers/Eurovolley_2026_scrapping/`.
+
 ## Setup
 
 1. Create a Supabase project.
