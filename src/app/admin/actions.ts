@@ -4,12 +4,29 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Requires an authenticated user who is actually in the `admins` table.
+ *
+ * RLS already blocks non-admins from writing results, but it does so by filtering rows, so an
+ * unauthorised update silently affects nothing and still reports success to the caller. Checking
+ * explicitly here fails loudly instead, and means these actions aren't relying on RLS being the
+ * only thing standing between a logged-in user and the tournament results.
+ */
 async function requireAdmin() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { data: adminRow } = await supabase
+    .from("admins")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!adminRow) throw new Error("Not authorised");
+
   return supabase;
 }
 
