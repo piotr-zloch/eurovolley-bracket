@@ -90,6 +90,8 @@ export default function TournamentPrediction({
   initialPicks,
   dict,
   isLoggedIn,
+  isLocked,
+  deadline,
 }: {
   tournamentId: number;
   groups: Group[];
@@ -97,6 +99,8 @@ export default function TournamentPrediction({
   initialPicks: Record<string, number>;
   dict: Dict;
   isLoggedIn: boolean;
+  isLocked: boolean;
+  deadline: string;
 }) {
   const router = useRouter();
   const t = dict.predictions;
@@ -148,7 +152,7 @@ export default function TournamentPrediction({
     // Signed in, and this draft was explicitly submitted while signed out — the return trip
     // from signing up. Write it through and drop it. An unsubmitted draft is discarded instead
     // of overwriting whatever the account already has stored.
-    if (!draft.pendingSave) {
+    if (!draft.pendingSave || isLocked) {
       clearDraft();
       return;
     }
@@ -185,7 +189,7 @@ export default function TournamentPrediction({
 
   // Keep the signed-out draft current as they edit.
   useEffect(() => {
-    if (isLoggedIn || !dirty) return;
+    if (isLoggedIn || !dirty || isLocked) return;
     writeDraft({
       tournamentId,
       orders: Object.fromEntries(currentOrderIds().map((o) => [o.groupId, o.teamIds])),
@@ -338,6 +342,8 @@ export default function TournamentPrediction({
   }
 
   async function handleSave() {
+    if (isLocked) return;
+
     if (!isLoggedIn) {
       // Stash first, then send them to sign up — the draft is what they come back to.
       writeDraft({
@@ -464,17 +470,23 @@ export default function TournamentPrediction({
         </div>
       </section>
 
-      <div className="sticky bottom-0 flex items-center gap-3 border-t bg-white/95 py-4 backdrop-blur">
-        <button
-          onClick={handleSave}
-          className="rounded bg-blue-600 px-5 py-2.5 font-medium text-white disabled:opacity-60"
-          disabled={status === "saving"}
-        >
-          {status === "saving" ? t.saving : isLoggedIn ? t.save : t.saveSignUp}
-        </button>
+      <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t bg-white/95 py-4 backdrop-blur">
+        {isLocked ? (
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">{t.lockedTitle}</span> {t.lockedBody}
+          </p>
+        ) : (
+          <button
+            onClick={handleSave}
+            className="rounded bg-blue-600 px-5 py-2.5 font-medium text-white disabled:opacity-60"
+            disabled={status === "saving"}
+          >
+            {status === "saving" ? t.saving : isLoggedIn ? t.save : t.saveSignUp}
+          </button>
+        )}
         {status === "saved" && <span className="text-sm text-green-600">{t.saved}</span>}
         {status === "error" && <span className="text-sm text-red-600">{t.saveError}</span>}
-        {dirty && status !== "saving" && (
+        {!isLocked && dirty && status !== "saving" && (
           <span className="text-sm text-gray-500">{t.unsaved}</span>
         )}
       </div>

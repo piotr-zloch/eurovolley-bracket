@@ -154,9 +154,17 @@ Both feed the same leaderboards as separate columns plus a combined total.
 
 Two different ones, deliberately:
 
-- The **tournament prediction** locks at `tournaments.prediction_deadline` — the first ball of the
-  tournament (9 Sep 2026, 16:00 UTC). Users may still edit afterwards, but anything last saved
-  after that stops counting toward the leaderboard.
+- The **tournament prediction** locks at `tournaments.prediction_deadline` — the first ball of
+  the tournament (9 Sep 2026, 16:00 UTC). After that the page becomes a sandbox: the bracket can
+  still be dragged around, but saving is refused, so the stored entry is frozen. Enforced in
+  `saveAllPredictions`, not only by hiding the button.
+
+  Blocking the write rather than ignoring late ones matters because a save rewrites the whole
+  prediction — all four groups and every bracket slot — so a single post-deadline save would
+  otherwise have voided the entire entry, including parts the user never touched.
+
+  Consequence: someone who signs up after the tournament starts cannot enter the bracket
+  competition at all. They can still play match predictions.
 - A **match prediction** locks at that match's own kickoff, so the second competition runs all
   tournament long.
 

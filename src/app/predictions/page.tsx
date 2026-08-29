@@ -13,7 +13,7 @@ export default async function PredictionsPage() {
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("id, name")
+    .select("id, name, prediction_deadline")
     .order("id", { ascending: true })
     .limit(1)
     .single();
@@ -25,6 +25,9 @@ export default async function PredictionsPage() {
       </div>
     );
   }
+
+  // The bracket competition closes at the first ball; after that the page is a sandbox.
+  const isLocked = new Date(tournament.prediction_deadline).getTime() <= Date.now();
 
   const { data: groupRows } = await supabase
     .from("groups_table")
@@ -96,10 +99,19 @@ export default async function PredictionsPage() {
           initialPicks={initialPicks}
           dict={dict}
           isLoggedIn={!!user}
+          isLocked={isLocked}
+          deadline={tournament.prediction_deadline}
         />
       )}
 
-      {!user && (
+      {isLocked && (
+        <p className="mb-6 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <span className="font-medium">{dict.predictions.lockedTitle}</span>{" "}
+          {dict.predictions.lockedBody}
+        </p>
+      )}
+
+      {!user && !isLocked && (
         <p className="mt-8 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
           {dict.predictions.anonNotice}
         </p>

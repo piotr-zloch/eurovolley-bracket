@@ -97,6 +97,9 @@ const pl = {
       saved: "Zapisano!",
       saveError: "Nie udało się zapisać.",
       unsaved: "Masz niezapisane zmiany.",
+      lockedTitle: "Typowanie turnieju zamknięte.",
+      lockedBody:
+        "Turniej się rozpoczął, więc typ turnieju jest już zamknięty i liczy się ten zapisany przed pierwszą piłką. Możesz nadal układać drabinkę dla zabawy — zmiany nie zostaną zapisane. Typy meczowe działają normalnie przez cały turniej.",
       groupsLink: "Grasz ze znajomymi?",
       groupsLinkCta: "Załóż lub dołącz do grupy",
       groupsLinkTail: "aby porównać typy w rankingu.",
@@ -351,6 +354,9 @@ const en: Dict = {
       saved: "Saved!",
       saveError: "Could not save.",
       unsaved: "You have unsaved changes.",
+      lockedTitle: "Tournament predictions are closed.",
+      lockedBody:
+        "The tournament has started, so your prediction is locked to whatever you saved before the first ball. You can still move the bracket around for fun — nothing will be saved. Match predictions carry on as normal all tournament.",
       groupsLink: "Playing with friends?",
       groupsLinkCta: "Create or join a group",
       groupsLinkTail: "to compare predictions on a leaderboard.",

@@ -28,6 +28,22 @@ export async function saveAllPredictions(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Enforced here, not just by disabling the button: a client can be bypassed, and a write
+  // after the deadline would overwrite the entry this user is actually being scored on.
+  // Saving the whole prediction as one unit is what makes a late write so destructive — every
+  // group and every bracket slot is rewritten, not only what changed.
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("prediction_deadline")
+    .eq("id", tournamentId)
+    .single();
+
+  if (tournament && new Date(tournament.prediction_deadline).getTime() <= Date.now()) {
+    // A "use server" module may only export async functions, so this marker is a literal
+    // rather than a shared constant.
+    throw new Error("PREDICTIONS_CLOSED");
+  }
+
   const standingsRows = orders.flatMap((o) =>
     o.teamIds.map((teamId, index) => ({
       user_id: user.id,
