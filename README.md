@@ -102,7 +102,8 @@ Emails are **never** displayed anywhere in the app — players are identified on
   `lower(username)`.
 - **Scoring** — `compute_scores(tournament_id)` (`supabase/migrations/00000000000004_scoring.sql`):
   group standings score `10 - 4×|predicted - actual|` per team (negative allowed); bracket picks
-  score 4/8/16/32 points for R16/QF/SF/Final, 0 for a wrong pick. Callable by any admin, or by the
+  score 4/8/16/32 points for R16/QF/SF/Final plus 16 for the bronze medal match (losers of
+  SF1 and SF2), 0 for a wrong pick. Callable by any admin, or by the
   results scraper via the service_role key.
 - **Admin panel** — `src/app/admin`. Restricted to users listed in the `admins` table (add
   yourself: `insert into admins (user_id) values ('<your auth.users id>');` in the SQL editor).

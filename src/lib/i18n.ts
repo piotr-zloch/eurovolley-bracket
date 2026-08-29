@@ -54,6 +54,7 @@ const pl = {
       quarterfinals: "Ćwierćfinały",
       semifinals: "Półfinały",
       final: "Finał",
+      bronze: "Mecz o 3. miejsce",
       tbd: "—",
       save: "Zapisz typy",
       saving: "Zapisywanie…",
@@ -81,7 +82,7 @@ const pl = {
       owner: "właściciel",
       noPlayers: "Brak graczy.",
       rules:
-        "Za każdą drużynę w grupie: 10 punktów minus 4 za każde miejsce różnicy względem Twojego typu (możliwe wyniki ujemne). Trafiony typ w drabince: 4 / 8 / 16 / 32 punkty za 1/8, ćwierćfinał, półfinał i finał.",
+        "Za każdą drużynę w grupie: 10 punktów minus 4 za każde miejsce różnicy względem Twojego typu (możliwe wyniki ujemne). Trafiony typ w drabince: 4 punkty za 1/8 finału, 8 za ćwierćfinał, 16 za półfinał, 16 za mecz o 3. miejsce i 32 za finał.",
       playersOne: "1 gracz",
       playersFew: "{n} gracze",
       playersMany: "{n} graczy",
@@ -181,6 +182,7 @@ const en: Dict = {
       quarterfinals: "Quarterfinals",
       semifinals: "Semifinals",
       final: "Final",
+      bronze: "Bronze medal match",
       tbd: "—",
       save: "Save predictions",
       saving: "Saving…",
@@ -207,7 +209,7 @@ const en: Dict = {
       owner: "owner",
       noPlayers: "No players yet.",
       rules:
-        "Each team in a group scores 10 points minus 4 for every place it finishes away from your prediction (negatives possible). A correct bracket pick scores 4 / 8 / 16 / 32 for the round of 16, quarterfinal, semifinal and final.",
+        "Each team in a group scores 10 points minus 4 for every place it finishes away from your prediction (negatives possible). A correct bracket pick scores 4 for the round of 16, 8 for a quarterfinal, 16 for a semifinal, 16 for the bronze medal match and 32 for the final.",
       playersOne: "1 player",
       playersFew: "{n} players",
       playersMany: "{n} players",

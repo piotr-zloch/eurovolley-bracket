@@ -15,6 +15,7 @@ const KNOCKOUT_SLOTS = [
   { slot: "SF1", stage: "semifinal" },
   { slot: "SF2", stage: "semifinal" },
   { slot: "FINAL", stage: "final" },
+  { slot: "BRONZE", stage: "bronze" },
 ];
 
 export default async function AdminPage() {

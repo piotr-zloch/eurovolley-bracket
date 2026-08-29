@@ -161,6 +161,13 @@ export default function TournamentPrediction({
       return match;
     }
 
+    /** The side that didn't win — only known once both teams and the winner are settled. */
+    function loserOf(slot: Slot): Team | null {
+      const winner = valid[slot.slot];
+      if (!winner || !slot.home || !slot.away) return null;
+      return slot.home.id === winner ? slot.away : slot.home;
+    }
+
     const r16Winners: Record<string, Team | null> = {};
     round16.forEach((s) => (r16Winners[s.slot] = resolve(s)));
 
@@ -183,12 +190,20 @@ export default function TournamentPrediction({
     const finalSlot: Slot = { slot: "FINAL", home: sfWinners["SF1"] ?? null, away: sfWinners["SF2"] ?? null };
     resolve(finalSlot);
 
+    const bronzeSlot: Slot = {
+      slot: "BRONZE",
+      home: loserOf(semis[0]),
+      away: loserOf(semis[1]),
+    };
+    resolve(bronzeSlot);
+
     return {
       rounds: [
         { title: t.roundOf16, slots: round16 },
         { title: t.quarterfinals, slots: quarters },
         { title: t.semifinals, slots: semis },
         { title: t.final, slots: [finalSlot] },
+        { title: t.bronze, slots: [bronzeSlot] },
       ],
       missingGroups: [...missing].sort(),
       validPicks: valid,
