@@ -43,8 +43,14 @@ export default async function SiteNav() {
         <Link href="/predictions" className="text-gray-600 hover:text-gray-900">
           {dict.nav.predictions}
         </Link>
+        <Link href="/matches" className="text-gray-600 hover:text-gray-900">
+          {dict.nav.matches}
+        </Link>
         <Link href="/leaderboard" className="text-gray-600 hover:text-gray-900">
           {dict.nav.leaderboard}
+        </Link>
+        <Link href="/rules" className="text-gray-600 hover:text-gray-900">
+          {dict.nav.rules}
         </Link>
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           {dict.nav.groups}

@@ -69,6 +69,11 @@ secondary — reachable from the nav ("My groups") or a link at the bottom of th
 - Prediction groups (create / join by invite code) and username editing — `src/app/dashboard`
 - **Global leaderboard** — `src/app/leaderboard`. Every player on the site, ranked by total points.
   Backed by the `global_scores` table so it also covers players who never joined a group.
+- **Fixtures & match predictions** — `src/app/matches`. The full 76-match schedule with live
+  results, and the second competition: predict each match's set score. One page rather than two,
+  since a separate read-only fixture list would repeat the same rows. Each match locks at its own
+  kickoff (enforced server-side in the action, not just in the UI).
+- **Rules page** — `src/app/rules`. Both competitions, the point tables, and the deadline.
 - **Per-group leaderboard** — `src/app/groups/[id]`. Ranks every member (including those with no
   score yet), with a Groups / Bracket / Total breakdown, the current user's row highlighted, and
   the scoring rules spelled out.
@@ -86,6 +91,37 @@ prefixes would buy nothing and would complicate the Supabase redirect allow-list
 - Team names are localised via `teams.name_pl`; group labels are built from `groups_table.code`.
 - Names are looked up by id at render time in `TournamentPrediction`, so switching language
   updates them live without discarding unsaved picks.
+
+## The two competitions
+
+**1. Tournament prediction** — group order + bracket. Scored `10 - 4×|predicted - actual|` per
+team (negatives allowed), and 4/8/16/16/32 for a correct R16 / QF / SF / bronze / final pick.
+
+**2. Match predictions** — the set score of each individual match:
+
+| Predicted vs actual | Points |
+|---|---|
+| Exact | 5 |
+| Same winner, 3:0 ↔ 3:1 | 4 |
+| Same winner, only one went to five sets | 3 |
+| Wrong winner, both went to five sets | 2 |
+| Anything else | 0 |
+
+Both feed the same leaderboards as separate columns plus a combined total.
+
+### Deadlines
+
+Two different ones, deliberately:
+
+- The **tournament prediction** locks at `tournaments.prediction_deadline` — the first ball of the
+  tournament (9 Sep 2026, 16:00 UTC). Users may still edit afterwards, but anything last saved
+  after that stops counting toward the leaderboard.
+- A **match prediction** locks at that match's own kickoff, so the second competition runs all
+  tournament long.
+
+Enforcement lives in `compute_scores()` rather than a write block, so late entries are kept —
+people can play along — they just don't qualify. `updated_at` is set by a database trigger, so a
+client cannot backdate a prediction.
 
 ## Usernames and privacy
 

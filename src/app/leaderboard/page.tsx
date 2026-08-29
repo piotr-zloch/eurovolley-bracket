@@ -15,7 +15,7 @@ export default async function GlobalLeaderboardPage() {
 
   const { data: scores } = await supabase
     .from("global_scores")
-    .select("user_id, points, group_points, bracket_points");
+    .select("user_id, points, group_points, bracket_points, match_points");
 
   const scoreByUser = new Map((scores ?? []).map((s) => [s.user_id, s]));
 
@@ -28,6 +28,7 @@ export default async function GlobalLeaderboardPage() {
         points: s ? s.points : null,
         groupPoints: s?.group_points ?? 0,
         bracketPoints: s?.bracket_points ?? 0,
+        matchPoints: s?.match_points ?? 0,
       };
     })
     .sort((a, b) => (b.points ?? -Infinity) - (a.points ?? -Infinity));
@@ -55,6 +56,7 @@ export default async function GlobalLeaderboardPage() {
               <th className="py-2">{t.player}</th>
               <th className="py-2 text-right">{t.groupsCol}</th>
               <th className="py-2 text-right">{t.bracketCol}</th>
+              <th className="py-2 text-right">{t.matchesCol}</th>
               <th className="py-2 text-right">{t.total}</th>
             </tr>
           </thead>
@@ -75,12 +77,15 @@ export default async function GlobalLeaderboardPage() {
                 <td className="py-2 text-right text-gray-500">
                   {r.points === null ? "—" : r.bracketPoints}
                 </td>
+                <td className="py-2 text-right text-gray-500">
+                  {r.points === null ? "—" : r.matchPoints}
+                </td>
                 <td className="py-2 text-right">{r.points === null ? "—" : r.points}</td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="py-4 text-center text-gray-400">
+                <td colSpan={6} className="py-4 text-center text-gray-400">
                   {t.noPlayers}
                 </td>
               </tr>
@@ -89,7 +94,12 @@ export default async function GlobalLeaderboardPage() {
         </table>
       </div>
 
-      <p className="mt-6 text-xs text-gray-500">{t.rules}</p>
+      <p className="mt-6 text-xs text-gray-500">
+        {t.rules}{" "}
+        <Link href="/rules" className="text-blue-600 underline">
+          {t.rulesLink}
+        </Link>
+      </p>
     </div>
   );
 }

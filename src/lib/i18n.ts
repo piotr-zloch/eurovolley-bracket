@@ -16,6 +16,8 @@ const pl = {
     nav: {
       predictions: "Twoje typy",
       leaderboard: "Ranking",
+      matches: "Mecze",
+      rules: "Zasady",
       groups: "Moje grupy",
       admin: "Admin",
       signOut: "Wyloguj",
@@ -77,10 +79,12 @@ const pl = {
       player: "Gracz",
       groupsCol: "Grupy",
       bracketCol: "Drabinka",
+      matchesCol: "Mecze",
       total: "Razem",
       you: "(Ty)",
       owner: "właściciel",
       noPlayers: "Brak graczy.",
+      rulesLink: "Pełne zasady punktacji",
       rules:
         "Za każdą drużynę w grupie: 10 punktów minus 4 za każde miejsce różnicy względem Twojego typu (możliwe wyniki ujemne). Trafiony typ w drabince: 4 punkty za 1/8 finału, 8 za ćwierćfinał, 16 za półfinał, 16 za mecz o 3. miejsce i 32 za finał.",
       playersOne: "1 gracz",
@@ -128,6 +132,63 @@ const pl = {
       noAccess: "Nie masz uprawnień administratora.",
     },
 
+
+    matches: {
+      title: "Mecze i typy meczowe",
+      intro:
+        "Wszystkie mecze turnieju z wynikami na żywo. Typuj wynik w setach każdego meczu — typ możesz zmieniać aż do pierwszej piłki tego meczu.",
+      allGames: "Terminarz",
+      yourPick: "Twój typ",
+      result: "Wynik",
+      points: "Pkt",
+      locked: "Mecz się rozpoczął — typy zamknięte.",
+      notStarted: "Jeszcze nie rozegrany",
+      save: "Zapisz typy meczowe",
+      saving: "Zapisywanie…",
+      saved: "Zapisano!",
+      saveError: "Nie udało się zapisać.",
+      noPick: "— brak typu —",
+      upcoming: "Nadchodzące",
+      played: "Rozegrane",
+      groupStageLabel: "Faza grupowa",
+      knockoutLabel: "Faza pucharowa",
+      noMatches: "Terminarz nie został jeszcze wczytany.",
+      deadlinePassed: "Typy zapisane po pierwszej piłce nie liczą się do rankingu.",
+    },
+
+    rules: {
+      title: "Zasady punktacji",
+      intro: "W typerze są dwie niezależne konkurencje. Punkty z obu sumują się w rankingu ogólnym.",
+      compA: "1. Typ turnieju (faza grupowa + drabinka)",
+      compAIntro:
+        "Jeden typ na cały turniej: kolejność w każdej grupie oraz zwycięzcy meczów fazy pucharowej.",
+      groupsHeading: "Faza grupowa — za każdą drużynę",
+      groupsRule:
+        "10 punktów minus 4 za każde miejsce różnicy między Twoim typem a końcową pozycją drużyny. Wynik może być ujemny.",
+      groupsExample:
+        "Przykład: typujesz drużynę na 1. miejsce. Zajmie 1. — 10 pkt. Zajmie 2. — 6 pkt. Zajmie 3. — 2 pkt. Zajmie 4. — −2 pkt.",
+      bracketHeading: "Drabinka — za każdy trafiony typ",
+      bracketR16: "1/8 finału",
+      bracketQF: "Ćwierćfinał",
+      bracketSF: "Półfinał",
+      bracketBronze: "Mecz o 3. miejsce",
+      bracketFinal: "Finał",
+      bracketWrong: "Nietrafiony typ nie odejmuje punktów — daje 0.",
+      deadlineHeading: "Termin",
+      deadlineRule:
+        "Typ turnieju liczy się do rankingu tylko wtedy, gdy został zapisany przed pierwszą piłką turnieju (9 września 2026, 18:00 czasu środkowoeuropejskiego). Po tym terminie nadal możesz zmieniać swój typ, ale zmienione pozycje przestają liczyć się do rankingu.",
+      compB: "2. Typy meczowe",
+      compBIntro:
+        "Osobna konkurencja: typujesz wynik w setach każdego meczu. Każdy mecz zamyka się w momencie pierwszej piłki, więc możesz typować przez cały turniej.",
+      matchTable: "Punkty za typ meczowy",
+      matchExact: "Dokładny wynik (np. typ 3:1, wynik 3:1)",
+      matchNear: "Ten sam zwycięzca, 3:0 zamiast 3:1 (lub odwrotnie)",
+      matchFive: "Ten sam zwycięzca, ale tylko jeden wynik na pięć setów (3:2 zamiast 3:1 lub 3:0)",
+      matchWrongFive: "Zły zwycięzca, ale oba wyniki na pięć setów (3:2 zamiast 2:3)",
+      matchOther: "Pozostałe przypadki",
+      pts: "pkt",
+    },
+
     common: {
       noTournament: "Nie skonfigurowano jeszcze turnieju.",
       language: "Język",
@@ -144,6 +205,8 @@ const en: Dict = {
     nav: {
       predictions: "Your predictions",
       leaderboard: "Leaderboard",
+      matches: "Fixtures",
+      rules: "Rules",
       groups: "My groups",
       admin: "Admin",
       signOut: "Sign out",
@@ -204,10 +267,12 @@ const en: Dict = {
       player: "Player",
       groupsCol: "Groups",
       bracketCol: "Bracket",
+      matchesCol: "Matches",
       total: "Total",
       you: "(you)",
       owner: "owner",
       noPlayers: "No players yet.",
+      rulesLink: "Full scoring rules",
       rules:
         "Each team in a group scores 10 points minus 4 for every place it finishes away from your prediction (negatives possible). A correct bracket pick scores 4 for the round of 16, 8 for a quarterfinal, 16 for a semifinal, 16 for the bronze medal match and 32 for the final.",
       playersOne: "1 player",
@@ -254,6 +319,63 @@ const en: Dict = {
       position: "pos",
       save: "Save",
       noAccess: "You don't have admin access.",
+    },
+
+
+    matches: {
+      title: "Fixtures & match predictions",
+      intro:
+        "Every match in the tournament with live results. Predict the set score of each one — you can change a pick right up until that match's first ball.",
+      allGames: "Schedule",
+      yourPick: "Your pick",
+      result: "Result",
+      points: "Pts",
+      locked: "Match has started — picks closed.",
+      notStarted: "Not played yet",
+      save: "Save match predictions",
+      saving: "Saving…",
+      saved: "Saved!",
+      saveError: "Could not save.",
+      noPick: "— no pick —",
+      upcoming: "Upcoming",
+      played: "Played",
+      groupStageLabel: "Group stage",
+      knockoutLabel: "Knockout",
+      noMatches: "The schedule hasn't been loaded yet.",
+      deadlinePassed: "Picks saved after the first ball don't count toward the leaderboard.",
+    },
+
+    rules: {
+      title: "How points work",
+      intro: "There are two separate competitions. Points from both add up on the overall leaderboard.",
+      compA: "1. Tournament prediction (group stage + bracket)",
+      compAIntro:
+        "One prediction for the whole tournament: the finishing order of each group, and the winner of every knockout match.",
+      groupsHeading: "Group stage — per team",
+      groupsRule:
+        "10 points minus 4 for every place between your prediction and where the team actually finishes. The result can be negative.",
+      groupsExample:
+        "Example: you predict a team finishes 1st. They finish 1st — 10 pts. 2nd — 6 pts. 3rd — 2 pts. 4th — −2 pts.",
+      bracketHeading: "Bracket — per correct pick",
+      bracketR16: "Round of 16",
+      bracketQF: "Quarterfinal",
+      bracketSF: "Semifinal",
+      bracketBronze: "Bronze medal match",
+      bracketFinal: "Final",
+      bracketWrong: "A wrong pick costs nothing — it simply scores 0.",
+      deadlineHeading: "Deadline",
+      deadlineRule:
+        "A tournament prediction only counts toward the leaderboard if it was saved before the tournament's first ball (9 September 2026, 18:00 CEST). You can still change your prediction afterwards, but anything edited after that point stops counting.",
+      compB: "2. Match predictions",
+      compBIntro:
+        "A separate competition: predict the set score of each individual match. Each match locks at its own first ball, so this one runs all tournament long.",
+      matchTable: "Points per match prediction",
+      matchExact: "Exact score (e.g. you say 3:1, it finishes 3:1)",
+      matchNear: "Same winner, 3:0 instead of 3:1 (or the other way round)",
+      matchFive: "Same winner, but only one of the two went to five sets (3:2 instead of 3:1 or 3:0)",
+      matchWrongFive: "Wrong winner, but both went to five sets (3:2 instead of 2:3)",
+      matchOther: "Anything else",
+      pts: "pts",
     },
 
     common: {
