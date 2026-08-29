@@ -59,7 +59,17 @@ function MatchTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
+      {/* table-fixed + explicit column widths: each group renders its own table, and with
+          automatic layout every one sizes its columns to its own content — so a group with
+          "Macedonia Północna" in it pushed the pick column further right than the others and
+          the tables didn't line up with each other. */}
+      <table className="w-full table-fixed border-collapse text-sm">
+        <colgroup>
+          <col />
+          <col className="w-[150px]" />
+          {!editable && <col className="w-[120px]" />}
+          {!editable && <col className="w-[70px]" />}
+        </colgroup>
         <thead>
           <tr className="border-b text-left">
             <th className="py-2 pr-2 font-medium text-gray-500">{t.allGames}</th>
@@ -72,7 +82,7 @@ function MatchTable({
           {rows.map((m) => (
             <tr key={m.id} className="border-b align-middle">
               <td className="py-2 pr-2">
-                <div>
+                <div className="break-words">
                   {m.home} – {m.away}
                 </div>
                 <div className="text-xs text-gray-400">
@@ -88,7 +98,7 @@ function MatchTable({
                   <select
                     value={picks[m.id] ?? ""}
                     onChange={(e) => setPick(m.id, e.target.value)}
-                    className="rounded border px-2 py-1"
+                    className="w-full rounded border px-2 py-1"
                   >
                     <option value="">{t.noPick}</option>
                     {SCORES.map((sc) => (
