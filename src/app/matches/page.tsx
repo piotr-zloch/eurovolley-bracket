@@ -42,7 +42,7 @@ export default async function MatchesPage() {
   const { data: rows } = await supabase
     .from("matches")
     .select(
-      "id, stage, group_id, bracket_slot, scheduled_at, home_sets, away_sets, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
+      "id, stage, group_id, bracket_slot, scheduled_at, venue, home_sets, away_sets, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
     )
     .eq("tournament_id", tournament.id)
     .order("scheduled_at", { nullsFirst: false });
@@ -65,8 +65,9 @@ export default async function MatchesPage() {
     .map((m) => {
       const home = pick(Array.isArray(m.home) ? m.home[0] : m.home);
       const away = pick(Array.isArray(m.away) ? m.away[0] : m.away);
-      // Knockout matches have no teams until the groups resolve — nothing to predict yet.
-      if (!home || !away) return null;
+      // Knockout rows exist from day one with venue and date but no teams. They stay visible
+      // in the schedule as TBD; `pending` keeps them out of the predictable list.
+      const pending = !home || !away;
 
       const myPick = pickByMatch.get(m.id) ?? null;
       let points: number | null = null;
@@ -83,8 +84,10 @@ export default async function MatchesPage() {
       return {
         id: m.id,
         label,
-        home,
-        away,
+        venue: (m.venue as string) ?? null,
+        pending,
+        home: home ?? "—",
+        away: away ?? "—",
         kickoff: m.scheduled_at,
         homeSets: m.home_sets,
         awaySets: m.away_sets,

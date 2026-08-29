@@ -10,6 +10,8 @@ export type MatchRow = {
   home: string;
   away: string;
   kickoff: string | null;
+  venue: string | null;
+  pending: boolean;
   homeSets: number | null;
   awaySets: number | null;
   started: boolean;
@@ -69,11 +71,13 @@ function MatchTable({
                   {m.home} – {m.away}
                 </div>
                 <div className="text-xs text-gray-400">
-                  {m.label} · {formatKickoff(m.kickoff, locale)}
+                  {[m.label, m.venue, formatKickoff(m.kickoff, locale)].filter(Boolean).join(" · ")}
                 </div>
               </td>
               <td className="py-2">
-                {editable ? (
+                {m.pending ? (
+                  <span className="text-xs text-gray-400">{t.awaitingTeams}</span>
+                ) : editable ? (
                   <select
                     value={picks[m.id] ?? ""}
                     onChange={(e) => setPick(m.id, e.target.value)}
@@ -159,7 +163,8 @@ export default function MatchList({
     }
   }
 
-  const upcoming = matches.filter((m) => !m.started);
+  const upcoming = matches.filter((m) => !m.started && !m.pending);
+  const pending = matches.filter((m) => !m.started && m.pending);
   const played = matches.filter((m) => m.started);
 
   return (
@@ -168,6 +173,14 @@ export default function MatchList({
         <section>
           <h2 className="mb-3 text-lg font-semibold">{t.upcoming}</h2>
           <MatchTable rows={upcoming} editable picks={picks} setPick={setPick} t={t} locale={locale} />
+        </section>
+      )}
+
+      {pending.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">{t.toBeDecided}</h2>
+          <p className="mb-3 text-sm text-gray-500">{t.toBeDecidedHint}</p>
+          <MatchTable rows={pending} editable={false} picks={picks} setPick={setPick} t={t} locale={locale} />
         </section>
       )}
 

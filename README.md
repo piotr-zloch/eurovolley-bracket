@@ -41,8 +41,16 @@ Hosted on Vercel, auto-deploying from `master` on GitHub: `piotr-zloch/eurovolle
 - **Group D**: Romania, France, Germany, Turkey, Latvia, Switzerland
 - Group stage: 9–17 Sep 2026. Round of 16: 19–21 Sep (Turin hosts A/C crossover, Sofia hosts B/D
   crossover). Quarterfinals: 22–23 Sep. Semifinals: 25 Sep (Assago). Final & bronze: 26 Sep (Assago).
-- Official R16 crossover pairing (`src/lib/knockout-template.ts`): A1–C4, C2–A3, D1–B4, B2–D3,
-  C1–A4, A2–C3, B1–D4, D2–B3.
+- Knockout bracket (`src/lib/knockout-template.ts`) uses CEV's own slot names so it matches the
+  published bracket: EF1 A1–C4, EF2 C1–A4, EF3 A2–C3, EF4 C2–A3, EF5 B1–D4, EF6 D1–B4,
+  EF7 B2–D3, EF8 D2–B3. Quarterfinals are EF1/EF4, EF2/EF3, EF5/EF8, EF6/EF7 — and the
+  **semifinals cross over: QF1×QF4 and QF2×QF3**, not 1×2 / 3×4.
+- Venues: A/C-side knockout in Turin, B/D-side in Sofia, medals in Milan (Assago).
+- Knockout rows exist from the start with venue and date but no teams; the scraper fills each
+  round's line-up in as the previous round finishes, so the fixture list completes itself.
+  Knockout kick-off **times are provisional** — CEV has published only day windows, so each slot
+  is seeded with the earliest plausible start (locking early is safe; locking late would let
+  someone predict a match already in progress).
 
 ## User flow
 

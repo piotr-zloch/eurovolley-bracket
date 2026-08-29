@@ -20,24 +20,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ROUND_OF_16_TEMPLATE } from "@/lib/knockout-template";
+import { QF_SOURCES, ROUND_OF_16_TEMPLATE, SF_SOURCES } from "@/lib/knockout-template";
 import { fmt, type Dict } from "@/lib/i18n";
 import { saveAllPredictions } from "./actions";
 
 type Team = { id: number; name: string };
 type Group = { id: number; name: string; code: string; teams: Team[] };
 type Slot = { slot: string; home: Team | null; away: Team | null };
-
-const QF_SOURCES: [string, string, string][] = [
-  ["QF1", "R16-1", "R16-2"],
-  ["QF2", "R16-3", "R16-4"],
-  ["QF3", "R16-5", "R16-6"],
-  ["QF4", "R16-7", "R16-8"],
-];
-const SF_SOURCES: [string, string, string][] = [
-  ["SF1", "QF1", "QF2"],
-  ["SF2", "QF3", "QF4"],
-];
 
 function SortableTeamRow({
   teamId,
