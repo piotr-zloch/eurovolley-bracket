@@ -5,20 +5,42 @@
   --foreground: #171717;
 }
 
+/*
+ * Tailwind's stock `blue` scale is remapped to the Szósty Set logo's blues, so the typer matches
+ * szostyset.pl without touching the ~40 components that already say `bg-blue-600` / `text-blue-600`.
+ * Renaming every one of those classes would be a large diff with a real chance of missing some;
+ * redefining the ramp is one place to look and impossible to apply inconsistently.
+ *
+ * 600 is the logo's wordmark blue and 400 the ball's highlight blue; the rest of the ramp is
+ * interpolated around them. Red / green / yellow are deliberately untouched — they carry meaning
+ * in the scoring and deadline UI, not brand.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-blue-50: #f2f6fc;
+  --color-blue-100: #e2ebf8;
+  --color-blue-200: #c7d9f1;
+  --color-blue-300: #9ec0e7;
+  --color-blue-400: #5ca6e0;
+  --color-blue-500: #4a80cd;
+  --color-blue-600: #3a6dc4;
+  --color-blue-700: #305aa3;
+  --color-blue-800: #2a4c88;
+  --color-blue-900: #26406f;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/*
+ * Deliberately no prefers-color-scheme block.
+ *
+ * There used to be one that flipped --background/--foreground to near-black, but every component
+ * in the app is written for a light background (text-gray-500, white cards, bg-gray-50 panels).
+ * On a device set to dark mode that produced grey-on-black text across the whole app. The site is
+ * light; committing to it is the fix, and it also matches szostyset.pl.
+ */
 body {
   background: var(--background);
   color: var(--foreground);
