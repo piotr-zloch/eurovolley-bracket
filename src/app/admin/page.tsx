@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/require-user";
+import { fmt } from "@/lib/i18n";
+import { getDict, getLocale } from "@/lib/i18n-server";
 import { ROUND_OF_16_TEMPLATE } from "@/lib/knockout-template";
 import ActualPositionForm from "./ActualPositionForm";
 import BracketWinnerForm from "./BracketWinnerForm";
@@ -17,17 +18,16 @@ const KNOCKOUT_SLOTS = [
 ];
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { supabase, user } = await requireUser();
+  const dict = await getDict();
+  const t = dict.admin;
+  const locale = await getLocale();
 
   const { data: adminRow } = await supabase.from("admins").select("user_id").eq("user_id", user.id).maybeSingle();
   if (!adminRow) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <p className="text-gray-500">You don&apos;t have admin access.</p>
+        <p className="text-gray-500">{t.noAccess}</p>
       </div>
     );
   }
@@ -42,20 +42,20 @@ export default async function AdminPage() {
   if (!tournament) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <p>No tournament configured yet.</p>
+        <p>{dict.common.noTournament}</p>
       </div>
     );
   }
 
   const { data: groups } = await supabase
     .from("groups_table")
-    .select("id, name, group_teams(id, actual_position, teams(id, name))")
+    .select("id, name, code, group_teams(id, actual_position, teams(id, name, name_pl))")
     .eq("tournament_id", tournament.id)
     .order("name");
 
   const { data: allTeams } = await supabase
     .from("teams")
-    .select("id, name")
+    .select("id, name, name_pl")
     .eq("tournament_id", tournament.id)
     .order("name");
 
@@ -69,20 +69,18 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-2 text-2xl font-bold">Admin — {tournament.name}</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Enter real results here as the tournament plays out. This overrides (or fills in ahead of)
-        whatever the Wikipedia scraper has picked up — the scraper and this panel write to the same
-        tables, so either can set or correct a result.
-      </p>
+      <h1 className="mb-2 text-2xl font-bold">
+        {t.title} — {tournament.name}
+      </h1>
+      <p className="mb-6 text-sm text-gray-500">{t.intro}</p>
 
-      <RecomputeScoresButton tournamentId={tournament.id} />
+      <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Group stage — final standings</h2>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">{t.groupFinal}</h2>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {(groups ?? []).map((g) => (
           <div key={g.id} className="rounded border p-4">
-            <h3 className="mb-2 font-medium">{g.name}</h3>
+            <h3 className="mb-2 font-medium">{fmt(dict.groupLabel, { code: g.code as string })}</h3>
             <ul className="flex flex-col gap-2">
               {(g.group_teams ?? []).map((gt) => {
                 const team = Array.isArray(gt.teams) ? gt.teams[0] : gt.teams;
@@ -90,8 +88,9 @@ export default async function AdminPage() {
                   <ActualPositionForm
                     key={gt.id}
                     groupTeamsId={gt.id}
-                    teamName={team?.name ?? "?"}
+                    teamName={(locale === "pl" && team?.name_pl) || team?.name || "?"}
                     currentPosition={gt.actual_position}
+                    dict={dict}
                   />
                 );
               })}
@@ -100,7 +99,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Knockout results</h2>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">{t.knockoutResults}</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {KNOCKOUT_SLOTS.map(({ slot, stage }) => (
           <BracketWinnerForm
@@ -108,8 +107,9 @@ export default async function AdminPage() {
             tournamentId={tournament.id}
             stage={stage}
             slot={slot}
-            teams={allTeams ?? []}
+            teams={(allTeams ?? []).map((x) => ({ id: x.id, name: (locale === "pl" && x.name_pl) || x.name }))}
             currentWinnerId={winnerBySlot.get(slot) ?? null}
+            dict={dict}
           />
         ))}
       </div>

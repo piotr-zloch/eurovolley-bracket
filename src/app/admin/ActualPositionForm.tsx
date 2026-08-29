@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import type { Dict } from "@/lib/i18n";
 import { setActualPosition } from "./actions";
 
 export default function ActualPositionForm({
   groupTeamsId,
   teamName,
   currentPosition,
+  dict,
 }: {
   groupTeamsId: number;
   teamName: string;
   currentPosition: number | null;
+  dict: Dict;
 }) {
   const [value, setValue] = useState(currentPosition?.toString() ?? "");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -35,11 +38,11 @@ export default function ActualPositionForm({
         max={6}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="pos"
+        placeholder={dict.admin.position}
         className="w-16 rounded border px-2 py-1"
       />
       <button onClick={handleSave} className="rounded bg-blue-600 px-2 py-1 text-xs text-white">
-        {status === "saving" ? "…" : "Save"}
+        {status === "saving" ? "…" : dict.admin.save}
       </button>
       {status === "saved" && <span className="text-xs text-green-600">✓</span>}
       {status === "error" && <span className="text-xs text-red-600">✗</span>}

@@ -4,7 +4,7 @@
 -- Run this once against a fresh schema.sql to develop/demo against before real results exist.
 
 insert into tournaments (name, season, prediction_deadline)
-values ('EuroVolley 2026 (Men)', 2026, '2026-09-09T00:00:00Z')
+values ('Mistrzostwa Europy 2026', 2026, '2026-09-09T00:00:00Z')
 returning id;
 
 -- Assumes the returned tournament id is 1 — adjust the tournament_id values below if different.

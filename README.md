@@ -1,12 +1,17 @@
-# EuroVolley 2026 Bracket Predictor
+# Typer ME 2026
 
-Next.js + Supabase app for group prediction pools: users sign up, create/join private groups,
-predict group-stage standings and fill a knockout bracket, then get scored against real results.
+Next.js + Supabase prediction pool for the 2026 men's volleyball European Championship.
+Users sign up, optionally create/join private groups, predict the group-stage order and the
+knockout bracket, then get scored against real results.
+
+Bilingual (Polish default, English toggle). The public "EuroVolley" name is a CEV trademark and
+is deliberately not used in the interface — the app is "Typer ME 2026" and the tournament is
+"Mistrzostwa Europy 2026".
 
 ## Deployment
 
-Live at **https://eurovolley-bracket.vercel.app** (Vercel, auto-deploys from `master` on GitHub:
-`piotr-zloch/eurovolley-bracket`).
+Live at **https://typer.szostyset.pl** (also reachable at `eurovolley-bracket.vercel.app`).
+Hosted on Vercel, auto-deploying from `master` on GitHub: `piotr-zloch/eurovolley-bracket`.
 
 - **Code changes**: `git push` → Vercel builds and swaps in the new version (~1–2 min). A failed
   build leaves the previous version serving. Non-`master` branches get their own preview URL.
@@ -23,7 +28,7 @@ Live at **https://eurovolley-bracket.vercel.app** (Vercel, auto-deploys from `ma
 
 1. Create a Supabase project.
 2. In the Supabase SQL editor, run `supabase/schema.sql`, then `supabase/seed_eurovolley_2026.sql`
-   to load the real 24 teams / 4 groups for EuroVolley 2026 (Men), drawn 2025-10-04 in Bari.
+   to load the real 24 teams / 4 groups, drawn 2025-10-04 in Bari.
 3. Copy `.env.local.example` to `.env.local` and fill in your project's URL and anon key.
 4. `npm install`
 5. `npm run dev` — visit http://localhost:3000
@@ -41,30 +46,46 @@ Live at **https://eurovolley-bracket.vercel.app** (Vercel, auto-deploys from `ma
 
 ## User flow
 
-Login/signup → **group-stage predictions** (the landing page) → once all 4 groups are saved, a
-call-to-action unlocks the **knockout bracket**, whose Round of 16 is built from those predictions.
-Creating/joining a prediction group for the leaderboard is secondary — reachable from the nav
-("My groups") or a link at the bottom of the predictions page.
+Login/signup → **`/predictions`**, which holds the group stage and the knockout bracket together
+on one page with a single Save. Creating/joining a prediction group for the leaderboard is
+secondary — reachable from the nav ("My groups") or a link at the bottom of the predictions page.
 
 ## What's built
 
 - Email/password auth on separate `/login` and `/signup` pages — `src/app/login`, `src/app/signup`
 - Site nav shown on all logged-in pages (`src/components/SiteNav.tsx`); the Admin link only
   renders for users in the `admins` table
-- Group-stage standings predictor — `src/app/standings`. The landing page after login. Teams are
-  reordered by **dragging the ⠿ handle** (`@dnd-kit`, chosen over native HTML5 drag-and-drop
+- **Predictions page** — `src/app/predictions`. The landing page after login, combining the group
+  stage and the knockout bracket in one form with a single Save. The bracket is derived live from
+  the current (even unsaved) group order, so dragging a team instantly reshapes the whole knockout
+  tree; a pick whose team no longer appears in its match is dropped rather than left dangling, in
+  the UI and in the database. Teams are reordered by **dragging the ⠿ handle** (`@dnd-kit`, chosen over native HTML5 drag-and-drop
   because that doesn't fire on touch devices at all). Drag listeners sit on the handle only so a
   touch drag elsewhere on the row still scrolls the page; the `TouchSensor` uses a short hold
   delay for the same reason, and the `KeyboardSensor` keeps it operable without a mouse
-  (focus a handle, Space to lift, arrows to move, Space to drop). The page loads each user's
-  saved order back, shows per-group ✓ saved state and an "x of 4 saved" progress line, and
-  reveals the bracket CTA once all groups are in.
+  (focus a handle, Space to lift, arrows to move, Space to drop). Each user's saved order and
+  picks are loaded back on every visit.
+- `/standings` and `/bracket` remain as redirects to `/predictions` for old links.
 - Prediction groups (create / join by invite code) and username editing — `src/app/dashboard`
 - **Global leaderboard** — `src/app/leaderboard`. Every player on the site, ranked by total points.
   Backed by the `global_scores` table so it also covers players who never joined a group.
 - **Per-group leaderboard** — `src/app/groups/[id]`. Ranks every member (including those with no
   score yet), with a Groups / Bracket / Total breakdown, the current user's row highlighted, and
   the scoring rules spelled out.
+
+## Internationalisation
+
+Polish is the default; a toggle in the nav switches to English and stores the choice in a cookie
+(no `/pl/` `/en/` route prefixes — every page is behind a login and rendered per request, so URL
+prefixes would buy nothing and would complicate the Supabase redirect allow-list).
+
+- `src/lib/i18n.ts` — the dictionaries plus `fmt()`/`plural()`. Imported by Client Components, so
+  it must stay free of `next/headers`, and every entry must be a plain string: a function anywhere
+  in the object makes the whole dict unserializable across the server/client boundary.
+- `src/lib/i18n-server.ts` — `getLocale()` / `getDict()`, which read the cookie.
+- Team names are localised via `teams.name_pl`; group labels are built from `groups_table.code`.
+- Names are looked up by id at render time in `TournamentPrediction`, so switching language
+  updates them live without discarding unsaved picks.
 
 ## Usernames and privacy
 
@@ -79,11 +100,6 @@ Emails are **never** displayed anywhere in the app — players are identified on
 - Usernames live in `profiles`, created by the `handle_new_user()` trigger and editable from
   `/dashboard`. The DB enforces the same rules via a CHECK constraint and a unique index on
   `lower(username)`.
-- Knockout bracket predictor — `src/app/bracket`. The Round of 16 is derived live from each user's
-  own group standings prediction via the official crossover template, so users see their own
-  predicted matchups (not the real teams, which aren't known until group play finishes); later
-  rounds populate automatically as winners are picked.
-- Per-group leaderboard — `src/app/groups/[id]`
 - **Scoring** — `compute_scores(tournament_id)` (`supabase/migrations/00000000000004_scoring.sql`):
   group standings score `10 - 4×|predicted - actual|` per team (negative allowed); bracket picks
   score 4/8/16/32 points for R16/QF/SF/Final, 0 for a wrong pick. Callable by any admin, or by the

@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
+import { getDict } from "@/lib/i18n-server";
 
 export default async function GlobalLeaderboardPage() {
   const { supabase, user } = await requireUser();
+  const dict = await getDict();
+  const t = dict.leaderboard;
 
   // Everyone who has picked a username, whether or not they've joined a prediction group.
-  const { data: profiles } = await supabase.from("profiles").select("id, username").not("username", "is", null);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .not("username", "is", null);
 
   const { data: scores } = await supabase
     .from("global_scores")
@@ -30,31 +36,26 @@ export default async function GlobalLeaderboardPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-1 text-2xl font-bold">Global leaderboard</h1>
+      <h1 className="mb-1 text-2xl font-bold">{t.globalTitle}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        Every player on the site, ranked by total points.{" "}
+        {t.globalIntro}{" "}
         <Link href="/dashboard" className="text-blue-600 underline">
-          Your private groups
+          {t.privateGroupsLink}
         </Link>{" "}
-        have their own leaderboards.
+        {t.privateGroupsTail}
       </p>
 
-      {!anyScored && (
-        <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">
-          No results are in yet — scores appear once the tournament starts (9 Sep 2026) and results
-          are recorded.
-        </p>
-      )}
+      {!anyScored && <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{t.noResults}</p>}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b text-left">
-              <th className="py-2 pr-2">#</th>
-              <th className="py-2">Player</th>
-              <th className="py-2 text-right">Groups</th>
-              <th className="py-2 text-right">Bracket</th>
-              <th className="py-2 text-right">Total</th>
+              <th className="py-2 pr-2">{t.rank}</th>
+              <th className="py-2">{t.player}</th>
+              <th className="py-2 text-right">{t.groupsCol}</th>
+              <th className="py-2 text-right">{t.bracketCol}</th>
+              <th className="py-2 text-right">{t.total}</th>
             </tr>
           </thead>
           <tbody>
@@ -66,7 +67,7 @@ export default async function GlobalLeaderboardPage() {
                 <td className="py-2 pr-2 text-gray-400">{r.points === null ? "–" : i + 1}</td>
                 <td className="py-2">
                   {r.name}
-                  {r.userId === user.id && <span className="ml-2 text-xs text-gray-500">(you)</span>}
+                  {r.userId === user.id && <span className="ml-2 text-xs text-gray-500">{t.you}</span>}
                 </td>
                 <td className="py-2 text-right text-gray-500">
                   {r.points === null ? "—" : r.groupPoints}
@@ -80,7 +81,7 @@ export default async function GlobalLeaderboardPage() {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="py-4 text-center text-gray-400">
-                  No players yet.
+                  {t.noPlayers}
                 </td>
               </tr>
             )}
@@ -88,11 +89,7 @@ export default async function GlobalLeaderboardPage() {
         </table>
       </div>
 
-      <p className="mt-6 text-xs text-gray-500">
-        Group standings score 10 points per team, minus 4 for each place they finish away from your
-        prediction (negatives possible). Correct bracket picks score 4 / 8 / 16 / 32 for the Round
-        of 16 / quarterfinal / semifinal / final.
-      </p>
+      <p className="mt-6 text-xs text-gray-500">{t.rules}</p>
     </div>
   );
 }

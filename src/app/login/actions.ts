@@ -18,7 +18,7 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/standings");
+  redirect("/predictions");
 }
 
 export async function signup(formData: FormData) {
@@ -62,7 +62,7 @@ export async function signup(formData: FormData) {
   // that will never arrive.
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/standings");
+    redirect("/predictions");
   }
 
   redirect("/login?message=Check your email to confirm your account");

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
+import { plural } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 
 type Row = {
   userId: string;
@@ -16,6 +18,8 @@ export default async function GroupLeaderboardPage({
 }) {
   const { id } = await params;
   const { supabase, user } = await requireUser();
+  const dict = await getDict();
+  const t = dict.leaderboard;
 
   const { data: group } = await supabase
     .from("prediction_groups")
@@ -26,9 +30,9 @@ export default async function GroupLeaderboardPage({
   if (!group) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <p className="text-gray-500">Group not found, or you don&apos;t have access.</p>
+        <p className="mb-4 text-gray-500">{t.notFound}</p>
         <Link href="/dashboard" className="text-blue-600 underline">
-          Back to my groups
+          {t.backToGroups}
         </Link>
       </div>
     );
@@ -61,7 +65,7 @@ export default async function GroupLeaderboardPage({
       const s = scoreByUser.get(uid);
       return {
         userId: uid,
-        name: nameById.get(uid) ?? "Unknown player",
+        name: nameById.get(uid) ?? "—",
         points: s ? s.points : null,
         groupPoints: s?.group_points ?? 0,
         bracketPoints: s?.bracket_points ?? 0,
@@ -75,27 +79,21 @@ export default async function GroupLeaderboardPage({
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-1 text-2xl font-bold">{group.name}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        {rows.length} {rows.length === 1 ? "player" : "players"} · share the invite code{" "}
-        <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono">{group.invite_code}</span> to
-        add more.
+        {plural(dict, rows.length)} · {t.shareInvite}{" "}
+        <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono">{group.invite_code}</span>
       </p>
 
-      {!scored && (
-        <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">
-          No results are in yet — the leaderboard fills in once the tournament starts (9 Sep 2026)
-          and results are recorded.
-        </p>
-      )}
+      {!scored && <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{t.noResults}</p>}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b text-left">
-              <th className="py-2 pr-2">#</th>
-              <th className="py-2">Player</th>
-              <th className="py-2 text-right">Groups</th>
-              <th className="py-2 text-right">Bracket</th>
-              <th className="py-2 text-right">Total</th>
+              <th className="py-2 pr-2">{t.rank}</th>
+              <th className="py-2">{t.player}</th>
+              <th className="py-2 text-right">{t.groupsCol}</th>
+              <th className="py-2 text-right">{t.bracketCol}</th>
+              <th className="py-2 text-right">{t.total}</th>
             </tr>
           </thead>
           <tbody>
@@ -107,12 +105,14 @@ export default async function GroupLeaderboardPage({
                 <td className="py-2 pr-2 text-gray-400">{r.points === null ? "–" : i + 1}</td>
                 <td className="py-2">
                   {r.name}
-                  {r.userId === user.id && <span className="ml-2 text-xs text-gray-500">(you)</span>}
+                  {r.userId === user.id && <span className="ml-2 text-xs text-gray-500">{t.you}</span>}
                   {r.userId === group.owner_id && (
-                    <span className="ml-2 text-xs text-gray-400">owner</span>
+                    <span className="ml-2 text-xs text-gray-400">{t.owner}</span>
                   )}
                 </td>
-                <td className="py-2 text-right text-gray-500">{r.points === null ? "—" : r.groupPoints}</td>
+                <td className="py-2 text-right text-gray-500">
+                  {r.points === null ? "—" : r.groupPoints}
+                </td>
                 <td className="py-2 text-right text-gray-500">
                   {r.points === null ? "—" : r.bracketPoints}
                 </td>
@@ -123,18 +123,14 @@ export default async function GroupLeaderboardPage({
         </table>
       </div>
 
-      <p className="mt-6 text-xs text-gray-500">
-        Group standings score 10 points per team, minus 4 for each place they finish away from your
-        prediction (negatives possible). Correct bracket picks score 4 / 8 / 16 / 32 for the Round
-        of 16 / quarterfinal / semifinal / final.
-      </p>
+      <p className="mt-6 text-xs text-gray-500">{t.rules}</p>
 
       <div className="mt-8 flex gap-4 text-sm">
         <Link href="/dashboard" className="text-blue-600 underline">
-          ← My groups
+          {t.backToGroups}
         </Link>
-        <Link href="/standings" className="text-blue-600 underline">
-          My predictions
+        <Link href="/predictions" className="text-blue-600 underline">
+          {t.myPredictions}
         </Link>
       </div>
     </div>

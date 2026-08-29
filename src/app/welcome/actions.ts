@@ -37,5 +37,5 @@ export async function saveUsername(formData: FormData, redirectTo: string, error
 }
 
 export async function setUsername(formData: FormData) {
-  await saveUsername(formData, "/standings", "/welcome");
+  await saveUsername(formData, "/predictions", "/welcome");
 }

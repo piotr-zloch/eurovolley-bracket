@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
+import { getDict } from "@/lib/i18n-server";
 import { USERNAME_MAX, USERNAME_MIN } from "@/lib/username";
 import { createGroup, joinGroup, updateUsername } from "./actions";
 
@@ -10,6 +11,8 @@ export default async function DashboardPage({
 }) {
   const { error } = await searchParams;
   const { supabase, user, username } = await requireUser();
+  const dict = await getDict();
+  const t = dict.groups;
 
   const { data: owned } = await supabase
     .from("prediction_groups")
@@ -28,14 +31,13 @@ export default async function DashboardPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-1 text-2xl font-bold">Your Prediction Groups</h1>
+      <h1 className="mb-1 text-2xl font-bold">{t.title}</h1>
       <p className="mb-6 text-sm text-gray-500">
-        Optional — create or join a group to compare your predictions with friends on a leaderboard.
-        Your{" "}
-        <Link href="/standings" className="text-blue-600 underline">
-          predictions
+        {t.intro}{" "}
+        <Link href="/predictions" className="text-blue-600 underline">
+          {t.introLinkText}
         </Link>{" "}
-        are saved either way.
+        {t.introTail}
       </p>
 
       {error && <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-700">{error}</p>}
@@ -43,11 +45,9 @@ export default async function DashboardPage({
       <form action={updateUsername} className="mb-8 flex flex-wrap items-end gap-2 rounded border p-4">
         <div className="flex flex-col gap-1">
           <label htmlFor="username" className="text-sm font-medium">
-            Your username
+            {t.yourUsername}
           </label>
-          <span className="text-xs text-gray-500">
-            How you appear on leaderboards. Your email is never shown.
-          </span>
+          <span className="text-xs text-gray-500">{t.usernameHelp}</span>
         </div>
         <input
           id="username"
@@ -58,43 +58,52 @@ export default async function DashboardPage({
           required
           className="rounded border px-3 py-2"
         />
-        <button className="rounded border border-blue-600 px-3 py-2 text-sm text-blue-600">Save</button>
+        <button className="rounded border border-blue-600 px-3 py-2 text-sm text-blue-600">
+          {t.save}
+        </button>
       </form>
 
       <ul className="mb-8 flex flex-col gap-2">
-        {allGroups.length === 0 && <li className="text-gray-500">No groups yet — create or join one below.</li>}
+        {allGroups.length === 0 && <li className="text-gray-500">{t.none}</li>}
         {allGroups.map((g) => (
           <li key={g!.id} className="flex items-center justify-between rounded border p-3">
             <Link href={`/groups/${g!.id}`} className="font-medium text-blue-600">
-              {g!.name} — leaderboard →
+              {g!.name} — {t.leaderboardLink} →
             </Link>
-            <span className="text-xs text-gray-400">Invite code: {g!.invite_code}</span>
+            <span className="text-xs text-gray-400">
+              {dict.leaderboard.inviteCode}: {g!.invite_code}
+            </span>
           </li>
         ))}
       </ul>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <form action={createGroup} className="flex flex-col gap-2 rounded border p-4">
-          <h2 className="font-semibold">Create a group</h2>
-          <input name="name" placeholder="Group name" required className="rounded border px-3 py-2" />
-          <button className="rounded bg-blue-600 px-3 py-2 text-white">Create</button>
+          <h2 className="font-semibold">{t.createTitle}</h2>
+          <input
+            name="name"
+            placeholder={t.createPlaceholder}
+            required
+            className="rounded border px-3 py-2"
+          />
+          <button className="rounded bg-blue-600 px-3 py-2 text-white">{t.create}</button>
         </form>
 
         <form action={joinGroup} className="flex flex-col gap-2 rounded border p-4">
-          <h2 className="font-semibold">Join a group</h2>
+          <h2 className="font-semibold">{t.joinTitle}</h2>
           <input
             name="invite_code"
-            placeholder="Invite code"
+            placeholder={t.joinPlaceholder}
             required
             className="rounded border px-3 py-2 uppercase"
           />
-          <button className="rounded border border-blue-600 px-3 py-2 text-blue-600">Join</button>
+          <button className="rounded border border-blue-600 px-3 py-2 text-blue-600">{t.join}</button>
         </form>
       </div>
 
       <div className="mt-8">
-        <Link href="/standings" className="text-blue-600 underline">
-          ← Back to my predictions
+        <Link href="/predictions" className="text-blue-600 underline">
+          {t.back}
         </Link>
       </div>
     </div>
