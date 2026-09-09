@@ -33,13 +33,7 @@ export default async function DashboardPage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-1 text-2xl font-bold">{t.title}</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        {t.intro}{" "}
-        <Link href="/predictions" className="text-blue-600 underline">
-          {t.introLinkText}
-        </Link>{" "}
-        {t.introTail}
-      </p>
+      <p className="mb-6 text-sm text-gray-500">{t.intro}</p>
 
       {/* Known failures arrive as a key so they can be translated; anything else is a raw
           database message, which is passed through untouched rather than swallowed. */}
@@ -71,6 +65,15 @@ export default async function DashboardPage({
       </form>
 
       <ChangePasswordForm dict={dict} />
+
+      <h2 className="mb-1 mt-10 text-lg font-semibold">{t.groupsHeading}</h2>
+      <p className="mb-4 text-sm text-gray-500">
+        {t.groupsIntro}{" "}
+        <Link href="/predictions" className="text-blue-600 underline">
+          {t.introLinkText}
+        </Link>{" "}
+        {t.introTail}
+      </p>
 
       <ul className="mb-8 flex flex-col gap-2">
         {allGroups.length === 0 && <li className="text-gray-500">{t.none}</li>}
