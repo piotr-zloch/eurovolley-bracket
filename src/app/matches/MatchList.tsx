@@ -16,6 +16,8 @@ export type MatchRow = {
   homeSets: number | null;
   awaySets: number | null;
   started: boolean;
+  /** Kick-off is within the next 24 hours — drives the "Najbliższe mecze" block. */
+  soon: boolean;
   pick: string | null; // "3-1"
   points: number | null;
   finished: boolean;
@@ -189,14 +191,18 @@ export default function MatchList({
   }
 
   const upcoming = matches.filter((m) => !m.started && !m.pending);
+  // What you came to the page to do today, lifted out of the per-group lists: one chronological
+  // block of everything about to start, whichever group it belongs to.
+  const soon = upcoming.filter((m) => m.soon);
+  const later = upcoming.filter((m) => !m.soon);
 
   // Groups first in A–D order, then any knockout match already carrying teams.
   const upcomingBuckets: { code: string | null; rows: MatchRow[] }[] = [];
-  const codes = [...new Set(upcoming.map((m) => m.groupCode).filter(Boolean))].sort() as string[];
+  const codes = [...new Set(later.map((m) => m.groupCode).filter(Boolean))].sort() as string[];
   codes.forEach((code) => {
-    upcomingBuckets.push({ code, rows: upcoming.filter((m) => m.groupCode === code) });
+    upcomingBuckets.push({ code, rows: later.filter((m) => m.groupCode === code) });
   });
-  const knockoutUpcoming = upcoming.filter((m) => !m.groupCode);
+  const knockoutUpcoming = later.filter((m) => !m.groupCode);
   if (knockoutUpcoming.length > 0) upcomingBuckets.push({ code: null, rows: knockoutUpcoming });
   const pending = matches.filter((m) => !m.started && m.pending);
   // `started` only means kick-off has passed. A match with no score yet is in progress, not
@@ -207,9 +213,19 @@ export default function MatchList({
 
   return (
     <div className="flex flex-col gap-10">
-      {upcoming.length > 0 && (
+      {soon.length > 0 && (
         <section>
-          <h2 className="mb-4 text-lg font-semibold">{t.upcoming}</h2>
+          <h2 className="mb-1 text-lg font-semibold">{t.soon}</h2>
+          <p className="mb-3 text-sm text-gray-500">{t.soonHint}</p>
+          {/* Not bucketed and labels left on: this block deliberately mixes groups, so each row
+              has to say which one it belongs to. */}
+          <MatchTable rows={soon} editable picks={picks} setPick={setPick} t={t} locale={locale} />
+        </section>
+      )}
+
+      {later.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">{t.rest}</h2>
           {/* Bucketed per tournament group: 60 group matches in one chronological list is a lot
               to scan when you mainly care about one or two groups. Order within each stays by
               kick-off. Knockout matches whose teams are known get their own bucket at the end. */}

@@ -63,6 +63,10 @@ export default async function MatchesPage() {
     t ? (locale === "pl" && t.name_pl) || t.name : null;
 
   const now = Date.now();
+  // The window for the "next 24 hours" block. Decided here rather than in the client component
+  // so "now" is fixed once per render — a client-side clock would also disagree with the
+  // server-rendered HTML on first paint.
+  const soonCutoff = now + 24 * 60 * 60 * 1000;
 
   const matches: MatchRow[] = (rows ?? [])
     .map((m) => {
@@ -88,6 +92,8 @@ export default async function MatchesPage() {
         points = qualifies ? matchPoints(ph, pa, m.home_sets!, m.away_sets!) : 0;
       }
 
+      const kickoffMs = m.scheduled_at ? new Date(m.scheduled_at as string).getTime() : null;
+
       const groupCode = m.stage === "group" ? groupCodeById.get(m.group_id as number) ?? null : null;
       const label = groupCode
         ? fmt(dict.groupLabel, { code: groupCode })
@@ -104,7 +110,8 @@ export default async function MatchesPage() {
         kickoff: m.scheduled_at,
         homeSets: m.home_sets,
         awaySets: m.away_sets,
-        started: m.scheduled_at ? new Date(m.scheduled_at).getTime() <= now : false,
+        started: kickoffMs !== null && kickoffMs <= now,
+        soon: kickoffMs !== null && kickoffMs > now && kickoffMs <= soonCutoff,
         pick: myPick,
         points,
         finished,
