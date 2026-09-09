@@ -14,7 +14,12 @@ import { normalizeUsername, validateUsername } from "@/lib/username";
  * password, or picks a username that's taken, has to retype the whole form. Returning state keeps
  * what they entered.
  */
-export type AuthState = { error?: string; values?: { email?: string; username?: string } };
+export type AuthState = {
+  error?: string;
+  /** Set on a successful in-place change, where there is no redirect to carry the news. */
+  success?: string;
+  values?: { email?: string; username?: string };
+};
 
 /** Supabase reports errors in English; surface them in the user's language where we recognise them. */
 async function translateAuthError(message: string): Promise<string> {
@@ -120,8 +125,13 @@ export async function requestPasswordReset(_prev: AuthState, formData: FormData)
 
 export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const password = (formData.get("password") as string) ?? "";
+  const confirmPassword = (formData.get("confirm_password") as string) ?? "";
   const dict = await getDict();
 
+  // Confirmed here as well as at signup, and for a sharper reason: a typo at signup can be
+  // retried from a known state, whereas a typo here sets a password the user does not know on an
+  // account they have just proved they cannot get into.
+  if (password !== confirmPassword) return { error: dict.auth.errPasswordMismatch };
   if (password.length < 8) return { error: dict.auth.errPasswordShort };
 
   const supabase = await createClient();
@@ -136,6 +146,44 @@ export async function updatePassword(_prev: AuthState, formData: FormData): Prom
 
   revalidatePath("/", "layout");
   redirect("/predictions");
+}
+
+/**
+ * Password change for someone already signed in — the case the recovery-by-email flow doesn't
+ * cover, and the one that shouldn't depend on email working at all.
+ */
+export async function changePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const currentPassword = (formData.get("current_password") as string) ?? "";
+  const password = (formData.get("password") as string) ?? "";
+  const confirmPassword = (formData.get("confirm_password") as string) ?? "";
+  const dict = await getDict();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user?.email) redirect("/login");
+
+  if (password !== confirmPassword) return { error: dict.auth.errPasswordMismatch };
+  if (password.length < 8) return { error: dict.auth.errPasswordShort };
+
+  // Proves the person at the keyboard knows the existing password, so an unattended session
+  // can't be used to change it and lock the owner out. supabase-js has no "verify password"
+  // call, so signing in again as the same account is the check; a failed attempt leaves the
+  // current session untouched.
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  if (reauthError) return { error: dict.auth.errCurrentPasswordWrong };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: await translateAuthError(error.message) };
+
+  // Reported in place rather than by redirecting: the form sits on a page the user was already
+  // on, and bouncing them elsewhere would lose the confirmation.
+  revalidatePath("/", "layout");
+  return { success: dict.auth.passwordChanged };
 }
 
 export async function signOut() {

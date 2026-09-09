@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/require-user";
 import { getDict } from "@/lib/i18n-server";
 import { USERNAME_MAX, USERNAME_MIN } from "@/lib/username";
 import { createGroup, joinGroup, updateUsername } from "./actions";
+import ChangePasswordForm from "./ChangePasswordForm";
 
 export default async function DashboardPage({
   searchParams,
@@ -68,6 +69,8 @@ export default async function DashboardPage({
           {t.save}
         </button>
       </form>
+
+      <ChangePasswordForm dict={dict} />
 
       <ul className="mb-8 flex flex-col gap-2">
         {allGroups.length === 0 && <li className="text-gray-500">{t.none}</li>}
