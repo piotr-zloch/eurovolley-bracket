@@ -162,6 +162,11 @@ const pl = {
       recomputing: "Przeliczanie…",
       recomputed: "Punkty zaktualizowane.",
       recomputeError: "Błąd — sprawdź, czy masz uprawnienia administratora.",
+      matchResults: "Wyniki meczów",
+      matchResultsIntro:
+        "Wynik w setach każdego rozegranego meczu. Na tej podstawie liczone są punkty w konkursie typowania meczów, a zwycięzca meczu ustala się automatycznie.",
+      knockoutMatchResults: "Faza pucharowa",
+      noResult: "— brak —",
       groupFinal: "Faza grupowa — końcowa kolejność",
       knockoutResults: "Wyniki fazy pucharowej",
       winner: "— zwycięzca —",
@@ -420,6 +425,11 @@ const en: Dict = {
       recomputing: "Recomputing…",
       recomputed: "Scores updated.",
       recomputeError: "Failed — check you have admin access.",
+      matchResults: "Match results",
+      matchResultsIntro:
+        "The set score of every match played. Match-prediction points are scored from this, and the match winner is derived from it automatically.",
+      knockoutMatchResults: "Knockout stage",
+      noResult: "— none —",
       groupFinal: "Group stage — final standings",
       knockoutResults: "Knockout results",
       winner: "— winner —",

@@ -5,6 +5,7 @@ import { ROUND_OF_16_TEMPLATE } from "@/lib/knockout-template";
 import ActualPositionForm from "./ActualPositionForm";
 import BracketWinnerForm from "./BracketWinnerForm";
 import RecomputeScoresButton from "./RecomputeScoresButton";
+import MatchResultForm from "./MatchResultForm";
 
 const KNOCKOUT_SLOTS = [
   ...ROUND_OF_16_TEMPLATE.map((r) => ({ slot: r.slot, stage: "round_of_16" })),
@@ -60,13 +61,46 @@ export default async function AdminPage() {
     .eq("tournament_id", tournament.id)
     .order("name");
 
+  // One fetch serves both the knockout winner selects and the result-entry list below.
   const { data: matches } = await supabase
     .from("matches")
-    .select("bracket_slot, winner_team_id")
+    .select(
+      "id, stage, group_id, bracket_slot, scheduled_at, home_sets, away_sets, winner_team_id, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
+    )
     .eq("tournament_id", tournament.id)
-    .not("bracket_slot", "is", null);
+    .order("scheduled_at", { ascending: true });
 
   const winnerBySlot = new Map((matches ?? []).map((m) => [m.bracket_slot as string, m.winner_team_id]));
+
+  const teamName = (t: { name: string; name_pl: string | null } | null) =>
+    (locale === "pl" && t?.name_pl) || t?.name || "?";
+  const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);
+
+  // Formatted on the server and passed down as a string: letting the client render a date from a
+  // timestamp is what produces hydration mismatches.
+  const kickoffFormat = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Warsaw",
+  });
+
+  const allMatches = (matches ?? []).map((m) => ({
+    id: m.id as number,
+    stage: m.stage as string,
+    groupId: m.group_id as number | null,
+    // Group fixtures carry slots like "G-B-01"; the trailing number is enough to identify a row
+    // once it already sits under that group's heading.
+    label: ((m.bracket_slot as string | null) ?? "").replace(/^G-[A-D]-/, ""),
+    homeName: teamName(one(m.home)),
+    awayName: teamName(one(m.away)),
+    kickoff: m.scheduled_at ? kickoffFormat.format(new Date(m.scheduled_at as string)) : null,
+    homeSets: m.home_sets as number | null,
+    awaySets: m.away_sets as number | null,
+  }));
+
+  const knockoutOrder = ["round_of_16", "quarterfinal", "semifinal", "bronze", "final"];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -76,6 +110,65 @@ export default async function AdminPage() {
       <p className="mb-6 text-sm text-gray-500">{t.intro}</p>
 
       <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
+
+      {/* Set scores come first: it's the entry made after every match, where the standings below
+          are touched once per group and the knockout winners once per tie. */}
+      <h2 className="mb-1 mt-8 text-lg font-semibold">{t.matchResults}</h2>
+      <p className="mb-4 text-sm text-gray-500">{t.matchResultsIntro}</p>
+
+      {(groups ?? []).map((g) => {
+        const rows = allMatches.filter((m) => m.groupId === g.id);
+        if (rows.length === 0) return null;
+        return (
+          <div key={g.id} className="mb-6 rounded border p-4">
+            <h3 className="mb-2 font-medium">
+              {fmt(dict.groupLabel, { code: g.code as string })}
+            </h3>
+            <ul className="flex flex-col">
+              {rows.map((m) => (
+                <MatchResultForm
+                  key={m.id}
+                  matchId={m.id}
+                  label={m.label}
+                  homeName={m.homeName}
+                  awayName={m.awayName}
+                  kickoff={m.kickoff}
+                  currentHomeSets={m.homeSets}
+                  currentAwaySets={m.awaySets}
+                  dict={dict}
+                />
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+
+      {(() => {
+        const rows = allMatches
+          .filter((m) => m.stage !== "group")
+          .sort((a, b) => knockoutOrder.indexOf(a.stage) - knockoutOrder.indexOf(b.stage));
+        if (rows.length === 0) return null;
+        return (
+          <div className="mb-6 rounded border p-4">
+            <h3 className="mb-2 font-medium">{t.knockoutMatchResults}</h3>
+            <ul className="flex flex-col">
+              {rows.map((m) => (
+                <MatchResultForm
+                  key={m.id}
+                  matchId={m.id}
+                  label={m.label}
+                  homeName={m.homeName}
+                  awayName={m.awayName}
+                  kickoff={m.kickoff}
+                  currentHomeSets={m.homeSets}
+                  currentAwaySets={m.awaySets}
+                  dict={dict}
+                />
+              ))}
+            </ul>
+          </div>
+        );
+      })()}
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">{t.groupFinal}</h2>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
