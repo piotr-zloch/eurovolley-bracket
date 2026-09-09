@@ -54,24 +54,21 @@ export async function joinGroup(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const inviteCode = (formData.get("invite_code") as string).trim().toUpperCase();
+  const inviteCode = ((formData.get("invite_code") as string) ?? "").trim().toUpperCase();
 
-  const { data: group, error: findError } = await supabase
-    .from("prediction_groups")
-    .select("id")
-    .eq("invite_code", inviteCode)
-    .single();
+  // Via an RPC rather than reading prediction_groups directly: that table's SELECT policy only
+  // exposes rows to the owner and existing members, so a would-be joiner could never see the
+  // group they were trying to join — every valid code came back "not found". join_group()
+  // resolves the code and inserts the membership as a definer, leaving the policy intact.
+  const { data: groupId, error } = await supabase.rpc("join_group", { code: inviteCode });
 
-  if (findError || !group) {
-    redirect("/dashboard?error=Invite code not found");
+  if (error) {
+    redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
   }
 
-  const { error } = await supabase
-    .from("group_members")
-    .insert({ prediction_group_id: group!.id, user_id: user.id });
-
-  if (error && !error.message.includes("duplicate")) {
-    redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+  // An error key rather than English prose, so the page can render it in the user's language.
+  if (!groupId) {
+    redirect("/dashboard?error=inviteNotFound");
   }
 
   revalidatePath("/dashboard");

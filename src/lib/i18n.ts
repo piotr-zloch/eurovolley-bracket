@@ -151,6 +151,7 @@ const pl = {
       joinPlaceholder: "Kod zaproszenia",
       join: "Dołącz",
       back: "← Wróć do typów",
+      errInviteNotFound: "Nie znaleziono takiego kodu zaproszenia. Sprawdź go i spróbuj ponownie.",
     },
 
     admin: {
@@ -408,6 +409,7 @@ const en: Dict = {
       joinPlaceholder: "Invite code",
       join: "Join",
       back: "← Back to my predictions",
+      errInviteNotFound: "No group found for that invite code. Check it and try again.",
     },
 
     admin: {

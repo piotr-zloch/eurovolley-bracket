@@ -40,7 +40,13 @@ export default async function DashboardPage({
         {t.introTail}
       </p>
 
-      {error && <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-700">{error}</p>}
+      {/* Known failures arrive as a key so they can be translated; anything else is a raw
+          database message, which is passed through untouched rather than swallowed. */}
+      {error && (
+        <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-700">
+          {error === "inviteNotFound" ? t.errInviteNotFound : error}
+        </p>
+      )}
 
       <form action={updateUsername} className="mb-8 flex flex-wrap items-end gap-2 rounded border p-4">
         <div className="flex flex-col gap-1">
