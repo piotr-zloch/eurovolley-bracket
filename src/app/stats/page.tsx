@@ -6,8 +6,8 @@ type Score = (typeof SCORES)[number];
 
 function pickCellClass(pts: number | null): string {
   if (pts === null) return "bg-blue-50";
-  if (pts === 5) return "bg-green-600 text-white font-semibold";
-  if (pts === 4) return "bg-green-100 text-green-800 font-semibold";
+  if (pts === 5) return "bg-green-600 text-white";
+  if (pts === 4) return "bg-green-100 text-green-800";
   if (pts === 3) return "bg-yellow-100 text-yellow-800";
   if (pts === 2) return "bg-orange-100 text-orange-800";
   return "bg-red-100 text-red-700"; // 0
@@ -153,6 +153,24 @@ export default async function StatsPage() {
       {rows.length === 0 ? (
         <p className="text-gray-500">{t.predSummaryNoData}</p>
       ) : (
+        <>
+          {/* Colour legend for the Twój typ column */}
+          <div className="mb-4 flex flex-wrap gap-2 text-xs">
+            {[
+              { pts: 5, cell: "bg-green-600 text-white",    label: dict.rules.matchExact },
+              { pts: 4, cell: "bg-green-100 text-green-800", label: dict.rules.matchNear },
+              { pts: 3, cell: "bg-yellow-100 text-yellow-800", label: dict.rules.matchFive },
+              { pts: 2, cell: "bg-orange-100 text-orange-800", label: dict.rules.matchWrongFive },
+              { pts: 0, cell: "bg-red-100 text-red-700",    label: dict.rules.matchOther },
+            ].map(({ pts, cell, label }) => (
+              <span key={pts} className="flex items-center gap-1.5">
+                <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-medium ${cell}`}>
+                  {pts} {dict.rules.pts}
+                </span>
+                <span className="text-gray-500">{label}</span>
+              </span>
+            ))}
+          </div>
         <div className="overflow-x-auto rounded border">
           <table className="min-w-full text-sm">
             <thead>
@@ -260,6 +278,7 @@ export default async function StatsPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
