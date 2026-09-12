@@ -49,6 +49,9 @@ export default async function SiteNav() {
         <Link href="/leaderboard" className="text-gray-600 hover:text-gray-900">
           {dict.nav.leaderboard}
         </Link>
+        <Link href="/stats" className="text-gray-600 hover:text-gray-900">
+          {dict.nav.stats}
+        </Link>
         <Link href="/rules" className="text-gray-600 hover:text-gray-900">
           {dict.nav.rules}
         </Link>

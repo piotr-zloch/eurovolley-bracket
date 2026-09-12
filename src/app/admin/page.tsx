@@ -113,7 +113,7 @@ export default async function AdminPage() {
       <div className="mb-6 flex flex-wrap gap-3">
         <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
         <Link
-          href="/admin/prediction-summary"
+          href="/stats"
           className="inline-flex items-center rounded border px-3 py-2 text-sm hover:bg-gray-50"
         >
           {t.predSummaryLink}

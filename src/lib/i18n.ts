@@ -20,6 +20,7 @@ const pl = {
       rules: "Zasady",
       groups: "Profil",
       admin: "Admin",
+      stats: "Statystyki",
       signOut: "Wyloguj",
     },
 
@@ -303,6 +304,7 @@ const en: Dict = {
       rules: "Rules",
       groups: "Profile",
       admin: "Admin",
+      stats: "Stats",
       signOut: "Sign out",
     },
 
