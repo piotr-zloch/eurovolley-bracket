@@ -192,6 +192,9 @@ const pl = {
       predSummaryAvg: "Śr. pkt",
       predSummaryNoData: "Brak meczów z wynikami.",
       predSummaryBack: "← Panel administratora",
+      predSummaryYourPick: "Twój typ",
+      predSummaryYourPts: "Twoje pkt",
+      predSummaryVsAvg: "vs śr.",
     },
 
 
@@ -476,6 +479,9 @@ const en: Dict = {
       predSummaryAvg: "Avg pts",
       predSummaryNoData: "No matches with results yet.",
       predSummaryBack: "← Admin panel",
+      predSummaryYourPick: "Your pick",
+      predSummaryYourPts: "Your pts",
+      predSummaryVsAvg: "vs avg",
     },
 
 

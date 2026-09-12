@@ -68,9 +68,10 @@ function MatchTable({
       <table className="w-full table-fixed border-collapse text-sm">
         <colgroup>
           <col />
-          <col className="w-[150px]" />
-          {!editable && <col className="w-[120px]" />}
-          {!editable && <col className="w-[70px]" />}
+          {/* editable: select needs ~130px; non-editable: "3:1" fits in 56px */}
+          <col className={editable ? "w-[130px]" : "w-14"} />
+          {!editable && <col className="w-14" />}
+          {!editable && <col className="w-10" />}
         </colgroup>
         <thead>
           <tr className="border-b text-left">
@@ -120,7 +121,7 @@ function MatchTable({
                   {m.homeSets !== null ? (
                     `${m.homeSets}:${m.awaySets}`
                   ) : (
-                    <span className="text-gray-300">{t.notStarted}</span>
+                    <span className="text-gray-300">—</span>
                   )}
                 </td>
               )}
@@ -131,8 +132,9 @@ function MatchTable({
                   ) : m.counted ? (
                     m.points
                   ) : (
+                    /* title carries the full explanation; inline text broke the 40px column */
                     <span className="text-gray-400" title={t.notCountedHint}>
-                      {m.points} <span className="text-xs">({t.notCounted})</span>
+                      {m.points}†
                     </span>
                   )}
                 </td>
