@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
 import { getDict, getLocale } from "@/lib/i18n-server";
@@ -109,7 +110,15 @@ export default async function AdminPage() {
       </h1>
       <p className="mb-6 text-sm text-gray-500">{t.intro}</p>
 
-      <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
+      <div className="mb-6 flex flex-wrap gap-3">
+        <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
+        <Link
+          href="/admin/prediction-summary"
+          className="inline-flex items-center rounded border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          {t.predSummaryLink}
+        </Link>
+      </div>
 
       {/* Set scores come first: it's the entry made after every match, where the standings below
           are touched once per group and the knockout winners once per tie. */}

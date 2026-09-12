@@ -181,6 +181,16 @@ const pl = {
       position: "poz.",
       save: "Zapisz",
       noAccess: "Nie masz uprawnień administratora.",
+      predSummaryLink: "Statystyki typów meczowych →",
+      predSummaryTitle: "Statystyki typów meczowych",
+      predSummaryIntro: "Typy graczy dla każdego rozegranego meczu. Wyróżniona kolumna to prawidłowy wynik.",
+      predSummaryMatch: "Mecz",
+      predSummaryDate: "Data",
+      predSummaryResult: "Wynik",
+      predSummaryTotal: "Typujących",
+      predSummaryAvg: "Śr. pkt",
+      predSummaryNoData: "Brak meczów z wynikami.",
+      predSummaryBack: "← Panel administratora",
     },
 
 
@@ -454,6 +464,16 @@ const en: Dict = {
       position: "pos",
       save: "Save",
       noAccess: "You don't have admin access.",
+      predSummaryLink: "Match prediction stats →",
+      predSummaryTitle: "Match prediction stats",
+      predSummaryIntro: "Player picks for every completed match. The highlighted column is the correct result.",
+      predSummaryMatch: "Match",
+      predSummaryDate: "Date",
+      predSummaryResult: "Result",
+      predSummaryTotal: "Predictors",
+      predSummaryAvg: "Avg pts",
+      predSummaryNoData: "No matches with results yet.",
+      predSummaryBack: "← Admin panel",
     },
 
 
