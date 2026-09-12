@@ -4,6 +4,15 @@ import { getDict, getLocale } from "@/lib/i18n-server";
 const SCORES = ["3:0", "3:1", "3:2", "2:3", "1:3", "0:3"] as const;
 type Score = (typeof SCORES)[number];
 
+function pickCellClass(pts: number | null): string {
+  if (pts === null) return "bg-blue-50";
+  if (pts === 5) return "bg-green-600 text-white font-semibold";
+  if (pts === 4) return "bg-green-100 text-green-800 font-semibold";
+  if (pts === 3) return "bg-yellow-100 text-yellow-800";
+  if (pts === 2) return "bg-orange-100 text-orange-800";
+  return "bg-red-100 text-red-700"; // 0
+}
+
 // Mirrors match_prediction_points() from migration 13.
 function computePoints(ph: number, pa: number, ah: number, aa: number): number {
   if (ph === ah && pa === aa) return 5;
@@ -208,9 +217,7 @@ export default async function StatsPage() {
                     </td>
 
                     {/* ── Personal columns ── */}
-                    <td className={`px-3 py-2 text-center font-mono whitespace-nowrap border-l border-blue-200 bg-blue-50 ${
-                      row.myPick === row.actualScore ? "font-semibold text-green-700" : ""
-                    }`}>
+                    <td className={`px-3 py-2 text-center font-mono whitespace-nowrap border-l border-blue-200 ${pickCellClass(row.myPts)}`}>
                       {row.myPick ?? "—"}
                     </td>
                     <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50">
