@@ -224,6 +224,7 @@ export default async function StatsPage() {
                     {SCORES.map((s) => {
                       const count = row.counts[s] ?? 0;
                       const isCorrect = s === row.actualScore;
+                      const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
                       return (
                         <td
                           key={s}
@@ -235,7 +236,7 @@ export default async function StatsPage() {
                               : ""
                           }`}
                         >
-                          {count === 0 ? "—" : count}
+                          {count === 0 ? "—" : `${pct}%`}
                         </td>
                       );
                     })}
