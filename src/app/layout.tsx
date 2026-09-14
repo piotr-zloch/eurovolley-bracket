@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import { getLocale } from "@/lib/i18n-server";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
          * itself. Every page shared the bug; only this one had content wide enough to show it.
          */}
         <main className="w-full min-w-0 flex-1">{children}</main>
+        <Analytics />
       </body>
     </html>
   );
