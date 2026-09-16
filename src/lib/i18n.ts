@@ -198,6 +198,11 @@ const pl = {
       predSummaryYourPick: "Twój typ",
       predSummaryYourPts: "Twoje pkt",
       predSummaryVsAvg: "vs śr.",
+      groupStatsTitle: "Statystyki fazy grupowej",
+      groupStatsIntro: "Rozkład typowanych pozycji dla każdej drużyny. Podświetlona kolumna to zajęta pozycja finalna.",
+      groupStatsTeam: "Drużyna",
+      groupStatsPos: "Poz.",
+      groupStatsNoData: "Brak danych z fazy grupowej.",
     },
 
 
@@ -488,6 +493,11 @@ const en: Dict = {
       predSummaryYourPick: "Your pick",
       predSummaryYourPts: "Your pts",
       predSummaryVsAvg: "vs avg",
+      groupStatsTitle: "Group stage stats",
+      groupStatsIntro: "Distribution of predicted positions for each team. The highlighted column is the actual final position.",
+      groupStatsTeam: "Team",
+      groupStatsPos: "Pos.",
+      groupStatsNoData: "No group stage data yet.",
     },
 
 
