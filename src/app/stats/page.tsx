@@ -281,14 +281,14 @@ export default async function StatsPage() {
                 <div className="overflow-x-auto rounded border">
                   <table className="w-full table-fixed text-sm">
                     <colgroup>
-                      <col />{/* team name — takes remaining space */}
+                      <col className="w-44" />{/* team name */}
                       <col className="w-10" />{/* Poz. */}
-                      <col className="w-14" />{/* Twój typ */}
-                      <col className="w-14" />{/* Twoje pkt */}
+                      <col className="w-20" />{/* Twój typ */}
+                      <col className="w-16" />{/* Twoje pkt */}
                       <col className="w-14" />{/* vs śr. */}
                       {POSITIONS.map((pos) => <col key={pos} className="w-12" />)}
-                      <col className="w-16" />{/* Typujących */}
-                      <col className="w-14" />{/* Śr. pkt */}
+                      <col className="w-20" />{/* Typujących */}
+                      <col className="w-16" />{/* Śr. pkt */}
                     </colgroup>
                     <thead>
                       <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
