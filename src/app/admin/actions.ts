@@ -44,18 +44,20 @@ export async function setBracketWinner(
   tournamentId: number,
   stage: string,
   bracketSlot: string,
-  winnerTeamId: number | null
+  winnerTeamId: number | null,
+  homeTeamId?: number | null,
+  awayTeamId?: number | null
 ) {
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("matches").upsert(
-    {
-      tournament_id: tournamentId,
-      stage,
-      bracket_slot: bracketSlot,
-      winner_team_id: winnerTeamId,
-    },
-    { onConflict: "tournament_id,bracket_slot" }
-  );
+  const payload: Record<string, unknown> = {
+    tournament_id: tournamentId,
+    stage,
+    bracket_slot: bracketSlot,
+    winner_team_id: winnerTeamId,
+  };
+  if (homeTeamId !== undefined) payload.home_team_id = homeTeamId;
+  if (awayTeamId !== undefined) payload.away_team_id = awayTeamId;
+  const { error } = await supabase.from("matches").upsert(payload, { onConflict: "tournament_id,bracket_slot" });
   if (error) throw new Error(error.message);
   revalidatePath("/admin");
 }

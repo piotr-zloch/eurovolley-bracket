@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
 import { getDict, getLocale } from "@/lib/i18n-server";
-import { ROUND_OF_16_TEMPLATE } from "@/lib/knockout-template";
+import { ROUND_OF_16_TEMPLATE, QF_SOURCES, SF_SOURCES } from "@/lib/knockout-template";
 import ActualPositionForm from "./ActualPositionForm";
 import BracketWinnerForm from "./BracketWinnerForm";
 import RecomputeScoresButton from "./RecomputeScoresButton";
@@ -66,12 +66,77 @@ export default async function AdminPage() {
   const { data: matches } = await supabase
     .from("matches")
     .select(
-      "id, stage, group_id, bracket_slot, scheduled_at, home_sets, away_sets, winner_team_id, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
+      "id, stage, group_id, bracket_slot, scheduled_at, home_sets, away_sets, home_team_id, away_team_id, winner_team_id, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
     )
     .eq("tournament_id", tournament.id)
     .order("scheduled_at", { ascending: true });
 
   const winnerBySlot = new Map((matches ?? []).map((m) => [m.bracket_slot as string, m.winner_team_id]));
+
+  // Current home/away teams already saved for each knockout slot.
+  const pairingBySlot = new Map(
+    (matches ?? [])
+      .filter((m) => m.bracket_slot && m.stage !== "group")
+      .map((m) => [
+        m.bracket_slot as string,
+        { homeId: m.home_team_id as number | null, awayId: m.away_team_id as number | null },
+      ])
+  );
+
+  // Group position → team id map, built from the actual_position data already fetched.
+  const groupTeamMap = new Map<string, Map<number, number>>();
+  for (const g of groups ?? []) {
+    const posMap = new Map<number, number>();
+    for (const gt of g.group_teams ?? []) {
+      const team = Array.isArray(gt.teams) ? gt.teams[0] : gt.teams;
+      if (gt.actual_position != null && team?.id != null) {
+        posMap.set(gt.actual_position as number, team.id as number);
+      }
+    }
+    groupTeamMap.set(g.code as string, posMap);
+  }
+
+  // Suggested home/away per slot, derived from group standings and previous-round winners.
+  const suggestions = new Map<string, { homeId: number | null; awayId: number | null }>();
+
+  for (const ef of ROUND_OF_16_TEMPLATE) {
+    const [hg, hp] = ef.home;
+    const [ag, ap] = ef.away;
+    suggestions.set(ef.slot, {
+      homeId: groupTeamMap.get(hg)?.get(hp) ?? null,
+      awayId: groupTeamMap.get(ag)?.get(ap) ?? null,
+    });
+  }
+
+  for (const [qf, ef1, ef2] of QF_SOURCES) {
+    suggestions.set(qf, {
+      homeId: (winnerBySlot.get(ef1) as number | null) ?? null,
+      awayId: (winnerBySlot.get(ef2) as number | null) ?? null,
+    });
+  }
+
+  for (const [sf, qf1, qf2] of SF_SOURCES) {
+    suggestions.set(sf, {
+      homeId: (winnerBySlot.get(qf1) as number | null) ?? null,
+      awayId: (winnerBySlot.get(qf2) as number | null) ?? null,
+    });
+  }
+
+  suggestions.set("FINAL", {
+    homeId: (winnerBySlot.get("SF1") as number | null) ?? null,
+    awayId: (winnerBySlot.get("SF2") as number | null) ?? null,
+  });
+
+  // Bronze: losers of SF1 and SF2 (derived from saved SF pairings and winners).
+  function loserOf(sfSlot: string): number | null {
+    const pairing = pairingBySlot.get(sfSlot);
+    const winner = winnerBySlot.get(sfSlot) as number | null | undefined;
+    if (!pairing || !winner) return null;
+    if (pairing.homeId === winner) return pairing.awayId;
+    if (pairing.awayId === winner) return pairing.homeId;
+    return null;
+  }
+  suggestions.set("BRONZE", { homeId: loserOf("SF1"), awayId: loserOf("SF2") });
 
   const teamName = (t: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && t?.name_pl) || t?.name || "?";
@@ -211,7 +276,11 @@ export default async function AdminPage() {
             stage={stage}
             slot={slot}
             teams={(allTeams ?? []).map((x) => ({ id: x.id, name: (locale === "pl" && x.name_pl) || x.name }))}
-            currentWinnerId={winnerBySlot.get(slot) ?? null}
+            currentWinnerId={(winnerBySlot.get(slot) as number | null) ?? null}
+            currentHomeId={pairingBySlot.get(slot)?.homeId ?? null}
+            currentAwayId={pairingBySlot.get(slot)?.awayId ?? null}
+            suggestedHomeId={suggestions.get(slot)?.homeId ?? null}
+            suggestedAwayId={suggestions.get(slot)?.awayId ?? null}
             dict={dict}
           />
         ))}
