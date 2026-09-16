@@ -123,7 +123,7 @@ export default async function StatsPage() {
       supabase.rpc("get_group_prediction_summary", { p_tournament_id: tournament.id }),
       supabase
         .from("standings_predictions")
-        .select("group_teams_id, predicted_position"),
+        .select("group_id, team_id, predicted_position"),
     ]);
 
   // ── Match stats ──────────────────────────────────────────────────────────────
@@ -202,9 +202,10 @@ export default async function StatsPage() {
     groupSummaryMap.set(row.group_teams_id, existing);
   }
 
+  // Key: "groupId:teamId" → predicted_position
   const myGroupPickMap = new Map(
     (myGroupPicksRes.data ?? []).map((p) => [
-      p.group_teams_id as number,
+      `${p.group_id}:${p.team_id}`,
       p.predicted_position as number,
     ])
   );
@@ -216,7 +217,8 @@ export default async function StatsPage() {
       const team = Array.isArray(gt.teams) ? gt.teams[0] : gt.teams;
       const actualPosition = gt.actual_position as number | null;
       const summary = groupSummaryMap.get(gt.id as number) ?? { counts: {}, total: 0, avgPts: null };
-      const myPick = myGroupPickMap.get(gt.id as number) ?? null;
+      const teamId = (Array.isArray(gt.teams) ? gt.teams[0] : gt.teams)?.id as number | undefined;
+      const myPick = teamId != null ? (myGroupPickMap.get(`${g.id}:${teamId}`) ?? null) : null;
       const myPts =
         myPick !== null && actualPosition !== null ? computeGroupPoints(myPick, actualPosition) : null;
       return {

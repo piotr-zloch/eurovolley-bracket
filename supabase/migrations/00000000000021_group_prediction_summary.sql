@@ -1,5 +1,6 @@
 -- Aggregate group-stage predictions across all users without exposing individual rows.
--- Called from /stats; bypasses RLS the same way get_match_prediction_summary does.
+-- standings_predictions joins group_teams via (group_id, team_id), not a group_teams_id FK.
+-- Returns one row per (group_teams.id, predicted_position) so the caller can pivot by team.
 create or replace function get_group_prediction_summary(p_tournament_id bigint)
 returns table(
   group_teams_id   bigint,
@@ -10,7 +11,7 @@ returns table(
 language sql security definer set search_path = public as $$
   with scored as (
     select
-      sp.group_teams_id,
+      gt.id                    as group_teams_id,
       sp.predicted_position,
       case
         when gt.actual_position is not null
@@ -18,8 +19,8 @@ language sql security definer set search_path = public as $$
         else null
       end as pts
     from standings_predictions sp
-    join group_teams  gt on gt.id  = sp.group_teams_id
-    join groups_table g  on g.id   = gt.group_id
+    join group_teams  gt on gt.group_id = sp.group_id and gt.team_id = sp.team_id
+    join groups_table g  on g.id = gt.group_id
     where g.tournament_id = p_tournament_id
   ),
   per_pos as (
