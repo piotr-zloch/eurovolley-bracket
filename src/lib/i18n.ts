@@ -203,6 +203,14 @@ const pl = {
       groupStatsTeam: "Drużyna",
       groupStatsPos: "Poz.",
       groupStatsNoData: "Brak danych z fazy grupowej.",
+      bracketStatsTitle: "Statystyki fazy pucharowej",
+      bracketStatsIntro: "Rozkład typowanych par i zwycięzców dla każdego meczu fazy pucharowej.",
+      bracketStatsNoData: "Brak typów fazy pucharowej.",
+      bracketStatsPairPts: "Para",
+      bracketStatsWinnerPts: "Wynik",
+      bracketStatsAvgAll: "Śr. wszystkich",
+      bracketStatsPredictors: "typujących",
+      bracketStatsYourPick: "Twój typ",
     },
 
 
@@ -498,6 +506,14 @@ const en: Dict = {
       groupStatsTeam: "Team",
       groupStatsPos: "Pos.",
       groupStatsNoData: "No group stage data yet.",
+      bracketStatsTitle: "Knockout stage stats",
+      bracketStatsIntro: "Distribution of predicted pairings and winners for each knockout match.",
+      bracketStatsNoData: "No knockout bracket predictions yet.",
+      bracketStatsPairPts: "Pair",
+      bracketStatsWinnerPts: "Winner",
+      bracketStatsAvgAll: "Field avg",
+      bracketStatsPredictors: "predictors",
+      bracketStatsYourPick: "Your pick",
     },
 
 
