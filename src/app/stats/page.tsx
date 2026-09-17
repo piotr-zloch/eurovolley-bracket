@@ -775,6 +775,22 @@ export default async function StatsPage() {
                                 </span>
                               </span>
                             </div>
+                            {actT1 != null && (
+                              <div className="mb-1 truncate text-xs text-gray-500">
+                                Wynik:{" "}
+                                <span className={`font-medium ${myPairCorrect ? "text-green-700" : "text-gray-800"}`}>
+                                  {teamNameById(actT1)} – {teamNameById(actT2)}
+                                  {actualMatch?.winnerId && (
+                                    <>
+                                      {" → "}
+                                      <span className={`font-semibold ${myWinnerCorrect ? "text-green-700" : "text-gray-800"}`}>
+                                        {teamNameById(actualMatch.winnerId)}
+                                      </span>
+                                    </>
+                                  )}
+                                </span>
+                              </div>
+                            )}
                             <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
                               <span className={myPairPts === null ? "text-gray-400" : myPairPts > 0 ? "text-green-700 font-medium" : "text-gray-500"}>
                                 {t.bracketStatsPairPts}:{" "}
