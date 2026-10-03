@@ -9,7 +9,8 @@ function Row({ label, points }: { label: string; points: string }) {
   );
 }
 
-export default async function RulesPage() {
+export default async function RulesPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const dict = await getDict();
   const t = dict.rules;
   const pts = dict.rules.pts;

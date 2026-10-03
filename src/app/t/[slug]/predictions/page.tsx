@@ -1,3 +1,4 @@
+import { getTournamentBySlug, isArchived } from "@/lib/tournament";
 import Link from "next/link";
 import { getOptionalUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
@@ -6,28 +7,17 @@ import TournamentPrediction from "./TournamentPrediction";
 
 type Team = { id: number; name: string };
 
-export default async function PredictionsPage() {
+export default async function PredictionsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await getOptionalUser();
   const dict = await getDict();
   const locale = await getLocale();
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id, name, prediction_deadline")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (!tournament) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <p>{dict.common.noTournament}</p>
-      </div>
-    );
-  }
+  const tournament = await getTournamentBySlug(supabase, slug);
 
   // The bracket competition closes at the first ball; after that the page is a sandbox.
-  const isLocked = new Date(tournament.prediction_deadline).getTime() <= Date.now();
+  // An archived tournament is always locked, whatever its deadline says.
+  const isLocked = isArchived(tournament) || new Date(tournament.prediction_deadline).getTime() <= Date.now();
 
   const { data: groupRows } = await supabase
     .from("groups_table")

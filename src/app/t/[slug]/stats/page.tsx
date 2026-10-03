@@ -1,3 +1,4 @@
+import { getTournamentBySlug } from "@/lib/tournament";
 import { requireUser } from "@/lib/require-user";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { fmt } from "@/lib/i18n";
@@ -99,26 +100,14 @@ type GroupTeamRow = {
   myPts: number | null;
 };
 
-export default async function StatsPage() {
+export default async function StatsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await requireUser();
   const dict = await getDict();
   const t = dict.admin;
   const locale = await getLocale();
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id, name")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (!tournament) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <p>{dict.common.noTournament}</p>
-      </div>
-    );
-  }
+  const tournament = await getTournamentBySlug(supabase, slug);
 
   const teamName = (tm: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && tm?.name_pl) || tm?.name || "?";

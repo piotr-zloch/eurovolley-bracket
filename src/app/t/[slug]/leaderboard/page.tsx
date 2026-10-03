@@ -1,9 +1,11 @@
+import { getTournamentBySlug } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { getDict } from "@/lib/i18n-server";
 import LeaderboardTable from "./LeaderboardTable";
 
-export default async function GlobalLeaderboardPage() {
+export default async function GlobalLeaderboardPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await requireUser();
   const dict = await getDict();
   const t = dict.leaderboard;
@@ -13,9 +15,14 @@ export default async function GlobalLeaderboardPage() {
     .select("id, username")
     .not("username", "is", null);
 
+  const tournament = await getTournamentBySlug(supabase, slug);
+
+  // global_scores holds one row per user per tournament, so this must be filtered or a second
+  // competition's totals would be mixed into this table.
   const { data: scores } = await supabase
     .from("global_scores")
-    .select("user_id, points, group_points, bracket_points, match_points");
+    .select("user_id, points, group_points, bracket_points, match_points")
+    .eq("tournament_id", tournament.id);
 
   const scoreByUser = new Map((scores ?? []).map((s) => [s.user_id, s]));
 
@@ -54,7 +61,7 @@ export default async function GlobalLeaderboardPage() {
 
       <p className="mt-6 text-xs text-gray-500">
         {t.rules}{" "}
-        <Link href="/rules" className="text-blue-600 underline">
+        <Link href={`/t/${slug}/rules`} className="text-blue-600 underline">
           {t.rulesLink}
         </Link>
       </p>

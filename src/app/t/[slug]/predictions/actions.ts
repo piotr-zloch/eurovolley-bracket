@@ -34,11 +34,16 @@ export async function saveAllPredictions(
   // group and every bracket slot is rewritten, not only what changed.
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("prediction_deadline")
+    .select("prediction_deadline, status")
     .eq("id", tournamentId)
     .single();
 
-  if (tournament && new Date(tournament.prediction_deadline).getTime() <= Date.now()) {
+  // An archived tournament is read-only regardless of its deadline.
+  if (
+    tournament &&
+    (tournament.status === "archived" ||
+      new Date(tournament.prediction_deadline).getTime() <= Date.now())
+  ) {
     // A "use server" module may only export async functions, so this marker is a literal
     // rather than a shared constant.
     throw new Error("PREDICTIONS_CLOSED");

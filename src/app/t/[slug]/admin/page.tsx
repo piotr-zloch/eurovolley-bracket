@@ -1,3 +1,4 @@
+import { getTournamentBySlug } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
@@ -20,7 +21,8 @@ const KNOCKOUT_SLOTS = [
   { slot: "BRONZE", stage: "bronze" },
 ];
 
-export default async function AdminPage() {
+export default async function AdminPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await requireUser();
   const dict = await getDict();
   const t = dict.admin;
@@ -35,20 +37,7 @@ export default async function AdminPage() {
     );
   }
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id, name")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (!tournament) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <p>{dict.common.noTournament}</p>
-      </div>
-    );
-  }
+  const tournament = await getTournamentBySlug(supabase, slug);
 
   const { data: groups } = await supabase
     .from("groups_table")
@@ -178,7 +167,7 @@ export default async function AdminPage() {
       <div className="mb-6 flex flex-wrap gap-3">
         <RecomputeScoresButton tournamentId={tournament.id} dict={dict} />
         <Link
-          href="/stats"
+          href={`/t/${slug}/stats`}
           className="inline-flex items-center rounded border px-3 py-2 text-sm hover:bg-gray-50"
         >
           {t.predSummaryLink}

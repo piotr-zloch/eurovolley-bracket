@@ -1,3 +1,4 @@
+import { getTournamentBySlug } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { getDict, getLocale } from "@/lib/i18n-server";
@@ -18,7 +19,8 @@ type MatchRow = {
   avgPts: number | null;
 };
 
-export default async function PredictionSummaryPage() {
+export default async function PredictionSummaryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await requireUser();
   const dict = await getDict();
   const t = dict.admin;
@@ -38,20 +40,7 @@ export default async function PredictionSummaryPage() {
     );
   }
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id, name")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (!tournament) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <p>{dict.common.noTournament}</p>
-      </div>
-    );
-  }
+  const tournament = await getTournamentBySlug(supabase, slug);
 
   const teamName = (t: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && t?.name_pl) || t?.name || "?";
@@ -113,7 +102,7 @@ export default async function PredictionSummaryPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <Link href="/admin" className="mb-4 inline-block text-sm text-blue-600 hover:underline">
+      <Link href={`/t/${slug}/admin`} className="mb-4 inline-block text-sm text-blue-600 hover:underline">
         {t.predSummaryBack}
       </Link>
       <h1 className="mb-1 text-2xl font-bold">{t.predSummaryTitle}</h1>

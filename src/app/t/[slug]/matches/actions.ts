@@ -21,13 +21,17 @@ export async function saveMatchPredictions(picks: MatchPick[]) {
   // against scheduled_at) but they shouldn't be written at all.
   const { data: openMatches } = await supabase
     .from("matches")
-    .select("id, scheduled_at")
+    .select("id, scheduled_at, tournaments(status)")
     .in("id", clean.map((p) => p.matchId));
 
   const now = Date.now();
   const openIds = new Set(
     (openMatches ?? [])
-      .filter((m) => !m.scheduled_at || new Date(m.scheduled_at).getTime() > now)
+      .filter((m) => {
+        const t = Array.isArray(m.tournaments) ? m.tournaments[0] : m.tournaments;
+        if (t?.status === "archived") return false;
+        return !m.scheduled_at || new Date(m.scheduled_at).getTime() > now;
+      })
       .map((m) => m.id)
   );
 

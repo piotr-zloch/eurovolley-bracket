@@ -1,3 +1,4 @@
+import { getTournamentBySlug } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
@@ -13,25 +14,13 @@ function matchPoints(ph: number, pa: number, ah: number, aa: number): number {
   return 0;
 }
 
-export default async function MatchesPage() {
+export default async function MatchesPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { supabase, user } = await requireUser();
   const dict = await getDict();
   const locale = await getLocale();
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (!tournament) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <p>{dict.common.noTournament}</p>
-      </div>
-    );
-  }
+  const tournament = await getTournamentBySlug(supabase, slug);
 
   const { data: groups } = await supabase
     .from("groups_table")
@@ -125,7 +114,7 @@ export default async function MatchesPage() {
       <h1 className="mb-2 text-2xl font-bold">{dict.matches.title}</h1>
       <p className="mb-2 text-sm text-gray-500">{dict.matches.intro}</p>
       <p className="mb-8 text-sm">
-        <Link href="/rules" className="text-blue-600 underline">
+        <Link href={`/t/${slug}/rules`} className="text-blue-600 underline">
           {dict.leaderboard.rulesLink}
         </Link>
       </p>
