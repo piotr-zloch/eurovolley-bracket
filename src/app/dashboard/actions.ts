@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveTournament } from "@/lib/tournament";
 import { saveUsername } from "@/app/welcome/actions";
 
 function randomInviteCode() {
@@ -18,14 +19,10 @@ export async function createGroup(formData: FormData) {
 
   const name = formData.get("name") as string;
 
-  const { data: tournament } = await supabase
-    .from("tournaments")
-    .select("id")
-    .order("id", { ascending: true })
-    .limit(1)
-    .single();
+  // New private groups belong to the competition currently being played.
+  const tournament = await getActiveTournament(supabase);
 
-  if (!tournament) {
+  if (!tournament || tournament.status !== "active") {
     redirect("/dashboard?error=No tournament configured yet");
   }
 

@@ -26,43 +26,16 @@ export default async function SiteNav() {
     );
   }
 
-  const { data: adminRow } = await supabase
-    .from("admins")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
   return (
     <header className="border-b">
-      {/* flex-wrap: at ~375px these links otherwise overflow and make the whole page
-          scroll sideways. */}
+      {/* Tournament links live in t/[slug]/layout.tsx; this nav is only site-wide. */}
       <nav className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm">
-        <Link href="/predictions" className="font-semibold">
+        <Link href="/" className="font-semibold">
           {dict.appName}
-        </Link>
-        <Link href="/predictions" className="text-gray-600 hover:text-gray-900">
-          {dict.nav.predictions}
-        </Link>
-        <Link href="/matches" className="text-gray-600 hover:text-gray-900">
-          {dict.nav.matches}
-        </Link>
-        <Link href="/leaderboard" className="text-gray-600 hover:text-gray-900">
-          {dict.nav.leaderboard}
-        </Link>
-        <Link href="/stats" className="text-gray-600 hover:text-gray-900">
-          {dict.nav.stats}
-        </Link>
-        <Link href="/rules" className="text-gray-600 hover:text-gray-900">
-          {dict.nav.rules}
         </Link>
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
           {dict.nav.groups}
         </Link>
-        {adminRow && (
-          <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-            {dict.nav.admin}
-          </Link>
-        )}
         <div className="ml-auto flex items-center gap-3">
           <LanguageToggle locale={locale} />
           <form action={signOut}>

@@ -24,6 +24,14 @@ const pl = {
       signOut: "Wyloguj",
     },
 
+    archive: {
+      banner: "To archiwum zakończonej rywalizacji. Typowanie jest zamknięte, ale ranking i Twoje typy są nadal dostępne.",
+      switcher: "Rywalizacje",
+      archived: "archiwum",
+      draft: "wersja robocza",
+      draftBanner: "Wersja robocza: ta rywalizacja jest widoczna tylko dla administratorów.",
+    },
+
     auth: {
       signInTitle: "Zaloguj się, aby typować.",
       signUpTitle: "Załóż konto, aby typować.",
@@ -325,6 +333,14 @@ const en: Dict = {
       admin: "Admin",
       stats: "Stats",
       signOut: "Sign out",
+    },
+
+    archive: {
+      banner: "This competition has ended and is archived. Predictions are closed, but the leaderboard and your picks are still available.",
+      switcher: "Competitions",
+      archived: "archive",
+      draft: "draft",
+      draftBanner: "Draft: this competition is visible to admins only.",
     },
 
     auth: {

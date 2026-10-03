@@ -37,7 +37,7 @@ export async function setActualPosition(groupTeamsId: number, position: number |
     .update({ actual_position: position })
     .eq("id", groupTeamsId);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin");
+  revalidatePath("/t/[slug]/admin", "page");
 }
 
 export async function setBracketWinner(
@@ -59,7 +59,7 @@ export async function setBracketWinner(
   if (awayTeamId !== undefined) payload.away_team_id = awayTeamId;
   const { error } = await supabase.from("matches").upsert(payload, { onConflict: "tournament_id,bracket_slot" });
   if (error) throw new Error(error.message);
-  revalidatePath("/admin");
+  revalidatePath("/t/[slug]/admin", "page");
 }
 
 /**
@@ -122,13 +122,13 @@ export async function setMatchResult(
 
   // Both pages read these columns: /matches to show results and award match points, /standings
   // and the bracket to follow the knockout.
-  revalidatePath("/admin");
-  revalidatePath("/matches");
+  revalidatePath("/t/[slug]/admin", "page");
+  revalidatePath("/t/[slug]/matches", "page");
 }
 
 export async function recomputeScores(tournamentId: number) {
   const supabase = await requireAdmin();
   const { error } = await supabase.rpc("compute_scores", { p_tournament_id: tournamentId });
   if (error) throw new Error(error.message);
-  revalidatePath("/admin");
+  revalidatePath("/t/[slug]/admin", "page");
 }
