@@ -116,7 +116,14 @@ export async function setMatchResult(
 
   const { error } = await supabase
     .from("matches")
-    .update({ home_sets: homeSets, away_sets: awaySets, winner_team_id: winnerTeamId })
+    // 'admin' marks a hand-entered result, which the automatic sync will never overwrite.
+    // Clearing a result hands the match back to the sync.
+    .update({
+      home_sets: homeSets,
+      away_sets: awaySets,
+      winner_team_id: winnerTeamId,
+      result_source: homeSets === null ? null : "admin",
+    })
     .eq("id", matchId);
   if (error) throw new Error(error.message);
 

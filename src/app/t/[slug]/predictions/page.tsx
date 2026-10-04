@@ -29,7 +29,11 @@ export default async function PredictionsPage({ params }: { params: Promise<{ sl
   // so the client component just receives ready-to-render names.
   const groups = (groupRows ?? []).map((g) => ({
     id: g.id,
-    name: fmt(dict.groupLabel, { code: g.code as string }),
+    // The league has a single group holding the whole table, so it is named for what it is.
+    name:
+      tournament.type === "league"
+        ? dict.predictions.leagueTable
+        : fmt(dict.groupLabel, { code: g.code as string }),
     code: g.code as string,
     teams: (g.group_teams ?? [])
       .map((gt) => {
@@ -77,13 +81,16 @@ export default async function PredictionsPage({ params }: { params: Promise<{ sl
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold">{dict.predictions.title}</h1>
-      <p className="mb-8 text-sm text-gray-500">{dict.predictions.intro}</p>
+      <p className="mb-8 text-sm text-gray-500">
+        {tournament.type === "league" ? dict.predictions.leagueIntro : dict.predictions.intro}
+      </p>
 
       {groups.length === 0 ? (
         <p className="text-gray-500">{dict.common.noTournament}</p>
       ) : (
         <TournamentPrediction
           tournamentId={tournament.id}
+          tournamentType={tournament.type}
           groups={groups}
           initialOrders={initialOrders}
           initialPicks={initialPicks}

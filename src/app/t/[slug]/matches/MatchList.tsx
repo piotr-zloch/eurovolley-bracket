@@ -8,6 +8,12 @@ export type MatchRow = {
   id: number;
   label: string;
   groupCode: string | null;
+  /** League matchday; null for group-stage and knockout rows. */
+  round: number | null;
+  /** Announced date (yyyy-mm-dd) for fixtures whose kick-off time is not published yet. */
+  date: string | null;
+  /** Teams known but no kick-off time: shown, but closed for picks until a time exists. */
+  timeTbd: boolean;
   home: string;
   away: string;
   kickoff: string | null;
@@ -36,6 +42,13 @@ function formatKickoff(iso: string | null, locale: string) {
   });
 }
 
+function formatDate(isoDate: string, locale: string) {
+  // Noon avoids the date sliding a day under any timezone offset.
+  return new Date(`${isoDate}T12:00:00`).toLocaleDateString(locale === "pl" ? "pl-PL" : "en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
 
 /**
  * Defined at module scope, not inside MatchList: a component declared inline is a new type on
@@ -89,7 +102,12 @@ function MatchTable({
                   {m.home} – {m.away}
                 </div>
                 <div className="text-xs text-gray-400">
-                  {[hideLabel ? null : m.label, m.venue, formatKickoff(m.kickoff, locale)]
+                  {[
+                    hideLabel ? null : m.label,
+                    m.venue,
+                    formatKickoff(m.kickoff, locale) ||
+                      (m.date ? `${formatDate(m.date, locale)} (${t.timeTbdShort})` : ""),
+                  ]
                     .filter(Boolean)
                     .join(" · ")}
                 </div>
@@ -151,10 +169,13 @@ export default function MatchList({
   matches,
   dict,
   locale,
+  locked = false,
 }: {
   matches: MatchRow[];
   dict: Dict;
   locale: string;
+  /** Archived competition: nothing can be picked any more. */
+  locked?: boolean;
 }) {
   const t = dict.matches;
   const [picks, setPicks] = useState<Record<number, string>>(() => {
@@ -192,20 +213,32 @@ export default function MatchList({
     }
   }
 
-  const upcoming = matches.filter((m) => !m.started && !m.pending);
+  const upcoming = matches.filter((m) => !m.started && !m.pending && !m.timeTbd);
+  // Fixtures with only a provisional date: listed so the schedule is complete, but not pickable.
+  const timeTbd = matches.filter((m) => !m.started && !m.pending && m.timeTbd);
   // What you came to the page to do today, lifted out of the per-group lists: one chronological
   // block of everything about to start, whichever group it belongs to.
   const soon = upcoming.filter((m) => m.soon);
   const later = upcoming.filter((m) => !m.soon);
 
-  // Groups first in A–D order, then any knockout match already carrying teams.
-  const upcomingBuckets: { code: string | null; rows: MatchRow[] }[] = [];
-  const codes = [...new Set(later.map((m) => m.groupCode).filter(Boolean))].sort() as string[];
-  codes.forEach((code) => {
-    upcomingBuckets.push({ code, rows: later.filter((m) => m.groupCode === code) });
-  });
-  const knockoutUpcoming = later.filter((m) => !m.groupCode);
-  if (knockoutUpcoming.length > 0) upcomingBuckets.push({ code: null, rows: knockoutUpcoming });
+  // Groups first in A–D order, then league rounds, then any knockout match already carrying teams.
+  type Bucket = { key: string; title: string; rows: MatchRow[]; knockout?: boolean };
+  function bucketize(rows: MatchRow[]): Bucket[] {
+    const buckets: Bucket[] = [];
+    const codes = [...new Set(rows.map((m) => m.groupCode).filter(Boolean))].sort() as string[];
+    codes.forEach((code) => {
+      buckets.push({ key: `g${code}`, title: fmt(dict.groupLabel, { code }), rows: rows.filter((m) => m.groupCode === code) });
+    });
+    const rounds = [...new Set(rows.map((m) => m.round).filter((r): r is number => r !== null))].sort((a, b) => a - b);
+    rounds.forEach((r) => {
+      buckets.push({ key: `r${r}`, title: fmt(t.roundLabel, { n: r }), rows: rows.filter((m) => m.round === r) });
+    });
+    const knockout = rows.filter((m) => !m.groupCode && m.round === null);
+    if (knockout.length > 0) buckets.push({ key: "ko", title: t.knockoutLabel, rows: knockout, knockout: true });
+    return buckets;
+  }
+  const upcomingBuckets = bucketize(later);
+  const timeTbdBuckets = bucketize(timeTbd);
   const pending = matches.filter((m) => !m.started && m.pending);
   // `started` only means kick-off has passed. A match with no score yet is in progress, not
   // played — showing it under "Rozegrane" with an empty result read as a data problem.
@@ -215,13 +248,19 @@ export default function MatchList({
 
   return (
     <div className="flex flex-col gap-10">
+      {locked && (
+        <p className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+          {t.archivedNotice}
+        </p>
+      )}
+
       {soon.length > 0 && (
         <section>
           <h2 className="mb-1 text-lg font-semibold">{t.soon}</h2>
           <p className="mb-3 text-sm text-gray-500">{t.soonHint}</p>
           {/* Not bucketed and labels left on: this block deliberately mixes groups, so each row
               has to say which one it belongs to. */}
-          <MatchTable rows={soon} editable picks={picks} setPick={setPick} t={t} locale={locale} />
+          <MatchTable rows={soon} editable={!locked} picks={picks} setPick={setPick} t={t} locale={locale} />
         </section>
       )}
 
@@ -232,15 +271,36 @@ export default function MatchList({
               to scan when you mainly care about one or two groups. Order within each stays by
               kick-off. Knockout matches whose teams are known get their own bucket at the end. */}
           <div className="flex flex-col gap-8">
-            {upcomingBuckets.map(({ code, rows }) => (
-              <div key={code ?? "ko"}>
-                <h3 className="mb-2 font-medium">
-                  {code ? fmt(dict.groupLabel, { code }) : t.knockoutLabel}
-                </h3>
+            {upcomingBuckets.map(({ key, title, rows, knockout }) => (
+              <div key={key}>
+                <h3 className="mb-2 font-medium">{title}</h3>
                 <MatchTable
                   rows={rows}
-                  editable
-                  hideLabel={code !== null}
+                  editable={!locked}
+                  hideLabel={!knockout}
+                  picks={picks}
+                  setPick={setPick}
+                  t={t}
+                  locale={locale}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {timeTbd.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">{t.timeTbd}</h2>
+          <p className="mb-3 text-sm text-gray-500">{t.timeTbdHint}</p>
+          <div className="flex flex-col gap-8">
+            {timeTbdBuckets.map(({ key, title, rows, knockout }) => (
+              <div key={key}>
+                <h3 className="mb-2 font-medium">{title}</h3>
+                <MatchTable
+                  rows={rows}
+                  editable={false}
+                  hideLabel={!knockout}
                   picks={picks}
                   setPick={setPick}
                   t={t}
@@ -297,7 +357,7 @@ export default function MatchList({
 
       {matches.length === 0 && <p className="text-gray-500">{t.noMatches}</p>}
 
-      {upcoming.length > 0 && (
+      {upcoming.length > 0 && !locked && (
         <div className="sticky bottom-0 flex items-center gap-3 border-t bg-white/95 py-4 backdrop-blur">
           <button
             onClick={handleSave}

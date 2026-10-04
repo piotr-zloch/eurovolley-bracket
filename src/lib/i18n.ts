@@ -118,6 +118,15 @@ const pl = {
       groupsLink: "Grasz ze znajomymi?",
       groupsLinkCta: "Załóż lub dołącz do grupy",
       groupsLinkTail: "aby porównać typy w rankingu.",
+      leagueIntro:
+        "Ustaw przewidywaną tabelę fazy zasadniczej, a drabinka play-offów ułoży się automatycznie na podstawie Twoich typów.",
+      leagueTable: "Tabela fazy zasadniczej",
+      leagueTableHint:
+        "Przeciągnij uchwyt ⠿, aby ustawić przewidywaną kolejność po 26 kolejkach (1. miejsce na górze). Osiem najlepszych drużyn awansuje do play-offów.",
+      leaguePlayoffs: "Play-offy",
+      leaguePlayoffsHint:
+        "Drabinka powstaje z Twojej tabeli: ćwierćfinały 1–8, 2–7, 3–6 i 4–5, a w półfinałach zwycięzca 1–8 gra ze zwycięzcą 4–5, a zwycięzca 2–7 ze zwycięzcą 3–6. O 5. miejsce grają dwaj najwyżej sklasyfikowani przegrani ćwierćfinałów. Kliknij zwycięzcę każdego meczu.",
+      leagueFinalRow: "Finał, mecz o 3. i o 5. miejsce",
     },
 
     leaderboard: {
@@ -181,7 +190,9 @@ const pl = {
       recomputeError: "Błąd — sprawdź, czy masz uprawnienia administratora.",
       matchResults: "Wyniki meczów",
       matchResultsIntro:
-        "Wynik w setach każdego rozegranego meczu. Na tej podstawie liczone są punkty w konkursie typowania meczów, a zwycięzca meczu ustala się automatycznie.",
+        "Wynik w setach każdego rozegranego meczu. Na tej podstawie liczone są punkty w konkursie typowania meczów, a zwycięzca meczu ustala się automatycznie. W lidze wyniki pobierają się same z oficjalnej strony; wynik wpisany tutaj ręcznie zawsze ma pierwszeństwo, a wyczyszczenie go oddaje mecz z powrotem automatowi.",
+      resultAuto: "z ligi",
+      resultManual: "ręcznie",
       knockoutMatchResults: "Faza pucharowa",
       noResult: "— brak —",
       groupFinal: "Faza grupowa — końcowa kolejność",
@@ -251,6 +262,11 @@ const pl = {
       yourPoints: "Twoje punkty z meczów",
       groupStageLabel: "Faza grupowa",
       knockoutLabel: "Faza pucharowa",
+      roundLabel: "Kolejka {n}",
+      timeTbd: "Czekają na godzinę rozpoczęcia",
+      timeTbdHint: "Liga ogłosiła na razie tylko wstępne terminy. Typowanie meczu otworzy się, gdy pojawi się godzina rozpoczęcia.",
+      timeTbdShort: "godzina do potwierdzenia",
+      archivedNotice: "Rywalizacja zakończona: typy meczów są zamknięte.",
       noMatches: "Terminarz nie został jeszcze wczytany.",
       deadlinePassed: "Typy zapisane po pierwszej piłce nie liczą się do rankingu.",
     },
@@ -293,6 +309,24 @@ const pl = {
       matchWrongFive: "Zły zwycięzca przy meczu zakończonym w tiebreaku (typ 3:2 zamiast 2:3 lub odwrotnie)",
       matchOther: "Pozostałe przypadki",
       pts: "pkt",
+      league: {
+        compA: "1. Typ sezonu (tabela + play-offy)",
+        compAIntro:
+          "Jeden typ na cały sezon: końcowa tabela fazy zasadniczej oraz zwycięzcy meczów play-offów, które układają się na podstawie Twojej tabeli.",
+        tableHeading: "Tabela fazy zasadniczej — za każdą drużynę",
+        tableRule:
+          "14 punktów minus 1 za każde miejsce różnicy między Twoim typem a końcową pozycją drużyny po 26 kolejkach. Nigdy nie tracisz punktów.",
+        tableExample:
+          "Przykład: typujesz drużynę na 1. miejsce. Zajmie 1. — 14 pkt. Zajmie 2. — 13 pkt. Zajmie 5. — 10 pkt. Zajmie 14. — 1 pkt.",
+        playoffsHeading: "Play-offy",
+        playoffsDef:
+          "Ośmiu najlepszych z tabeli gra w play-offach: ćwierćfinały 1–8, 2–7, 3–6 i 4–5, w półfinałach zwycięzca 1–8 z 4–5 oraz 2–7 z 3–6. O 5. miejsce grają dwaj najwyżej sklasyfikowani przegrani ćwierćfinałów. Punkty liczymy osobno dla każdego meczu: za zwycięzcę, niezależnie od drogi, którą dotarł do meczu, oraz — osobno — za trafioną parę (połowa punktów za zwycięzcę).",
+        fifth: "Mecz o 5. miejsce",
+        deadlineRule:
+          "Typ sezonu liczy się do rankingu tylko wtedy, gdy został zapisany przed pierwszą piłką sezonu (16 października 2026, 17:30 czasu polskiego). Po tym terminie zmiany nie liczą się do rankingu.",
+        compBIntro:
+          "Osobna konkurencja: typujesz wynik w setach każdego meczu. Typowanie meczu otwiera się, gdy liga ogłosi godzinę jego rozpoczęcia, i zamyka się w momencie pierwszej piłki.",
+      },
     },
 
     landing: {
@@ -429,6 +463,15 @@ const en: Dict = {
       groupsLink: "Playing with friends?",
       groupsLinkCta: "Create or join a group",
       groupsLinkTail: "to compare predictions on a leaderboard.",
+      leagueIntro:
+        "Set your predicted regular-season table and the playoff bracket builds itself from your picks.",
+      leagueTable: "Regular-season table",
+      leagueTableHint:
+        "Drag the ⠿ handle to set your predicted order after 26 rounds (1st at top). The top eight teams reach the playoffs.",
+      leaguePlayoffs: "Playoffs",
+      leaguePlayoffsHint:
+        "Built from your table: quarterfinals 1-8, 2-7, 3-6 and 4-5; in the semifinals the winner of 1-8 meets the winner of 4-5, and the winner of 2-7 meets the winner of 3-6. The two best-ranked quarterfinal losers play for 5th place. Click the winner of each match.",
+      leagueFinalRow: "Final, 3rd and 5th place",
     },
 
     leaderboard: {
@@ -492,7 +535,9 @@ const en: Dict = {
       recomputeError: "Failed — check you have admin access.",
       matchResults: "Match results",
       matchResultsIntro:
-        "The set score of every match played. Match-prediction points are scored from this, and the match winner is derived from it automatically.",
+        "The set score of every match played. Match-prediction points are scored from this, and the match winner is derived from it automatically. In a league, results are pulled automatically from the official site; a result entered here by hand always takes precedence, and clearing it hands the match back to the automatic sync.",
+      resultAuto: "from the league",
+      resultManual: "manual",
       knockoutMatchResults: "Knockout stage",
       noResult: "— none —",
       groupFinal: "Group stage — final standings",
@@ -562,6 +607,11 @@ const en: Dict = {
       yourPoints: "Your match points",
       groupStageLabel: "Group stage",
       knockoutLabel: "Knockout",
+      roundLabel: "Round {n}",
+      timeTbd: "Waiting for a kick-off time",
+      timeTbdHint: "The league has only announced provisional dates so far. Picks for a match open once its kick-off time is published.",
+      timeTbdShort: "time to be confirmed",
+      archivedNotice: "This competition has ended: match picks are closed.",
       noMatches: "The schedule hasn't been loaded yet.",
       deadlinePassed: "Picks saved after the first ball don't count toward the leaderboard.",
     },
@@ -604,6 +654,24 @@ const en: Dict = {
       matchWrongFive: "Wrong winner in a match decided in the tiebreak (3:2 instead of 2:3, or the other way round)",
       matchOther: "Anything else",
       pts: "pts",
+      league: {
+        compA: "1. Season prediction (table + playoffs)",
+        compAIntro:
+          "One prediction for the whole season: the final regular-season table, and the winner of every playoff match, which builds itself from your table.",
+        tableHeading: "Regular-season table — per team",
+        tableRule:
+          "14 points minus 1 for every place between your prediction and where the team actually finishes after 26 rounds. You never lose points.",
+        tableExample:
+          "Example: you predict a team finishes 1st. They finish 1st — 14 pts. 2nd — 13 pts. 5th — 10 pts. 14th — 1 pt.",
+        playoffsHeading: "Playoffs",
+        playoffsDef:
+          "The top eight of the table play off: quarterfinals 1-8, 2-7, 3-6 and 4-5; in the semifinals the winner of 1-8 meets the winner of 4-5, and the winner of 2-7 meets the winner of 3-6. The two best-ranked quarterfinal losers play for 5th place. Each match is scored on its own: for the winner, whatever route that team took to get there, and separately for naming the correct pairing (half the winner points).",
+        fifth: "5th-place match",
+        deadlineRule:
+          "The season prediction only counts toward the leaderboard if it was saved before the first ball of the season (16 October 2026, 17:30 Polish time). After that, changes no longer count.",
+        compBIntro:
+          "A separate competition: you predict the set score of every match. A match opens for picks once the league announces its kick-off time, and closes at the first ball.",
+      },
     },
 
     landing: {
