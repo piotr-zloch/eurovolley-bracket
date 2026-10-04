@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/require-user";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { fmt } from "@/lib/i18n";
 import { leagueSlotLabel } from "@/lib/league-bracket";
+import { averagePosition, compareByConsensus } from "@/lib/position-stats";
 import CollapsibleSection from "./CollapsibleSection";
 
 const SCORES = ["3:0", "3:1", "3:2", "2:3", "1:3", "0:3"] as const;
@@ -117,6 +118,8 @@ type GroupTeamRow = {
   groupCode: string;
   teamName: string;
   actualPosition: number | null;
+  /** Mean position the players predicted for this team; null while nobody has. */
+  avgPredicted: number | null;
   counts: Partial<Record<number, number>>;
   total: number;
   avgPts: number | null;
@@ -299,6 +302,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         groupCode: g.code as string,
         teamName: teamName(team as { name: string; name_pl: string | null } | null),
         actualPosition,
+        avgPredicted: averagePosition(summary.counts),
         counts: summary.counts,
         total: summary.total,
         avgPts: summary.avgPts,
@@ -306,12 +310,23 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         myPts,
       };
     });
-    rows.sort((a, b) => {
-      if (a.actualPosition === null && b.actualPosition === null) return a.teamName.localeCompare(b.teamName);
-      if (a.actualPosition === null) return 1;
-      if (b.actualPosition === null) return -1;
-      return a.actualPosition - b.actualPosition;
-    });
+    if (isLeague) {
+      // A league table is listed the way the players ranked it, best first; the final position
+      // does not exist until the season ends.
+      rows.sort((a, b) =>
+        compareByConsensus(
+          { avg: a.avgPredicted, actual: a.actualPosition, name: a.teamName },
+          { avg: b.avgPredicted, actual: b.actualPosition, name: b.teamName }
+        )
+      );
+    } else {
+      rows.sort((a, b) => {
+        if (a.actualPosition === null && b.actualPosition === null) return a.teamName.localeCompare(b.teamName);
+        if (a.actualPosition === null) return 1;
+        if (b.actualPosition === null) return -1;
+        return a.actualPosition - b.actualPosition;
+      });
+    }
     groupMap.set(g.code as string, rows);
   }
 
@@ -459,6 +474,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                       <colgroup>
                         <col className="w-44" />
                         <col className="w-10" />
+                        {isLeague && <col className="w-16" />}
                         <col className="w-20" />
                         <col className="w-16" />
                         <col className="w-14" />
@@ -470,6 +486,11 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                         <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
                           <th className="px-3 py-2 whitespace-nowrap">{t.groupStatsTeam}</th>
                           <th className="px-3 py-2 whitespace-nowrap text-center">{t.groupStatsPos}</th>
+                          {isLeague && (
+                            <th className="px-3 py-2 whitespace-nowrap text-center" title={t.groupStatsAvgPosHint}>
+                              {t.groupStatsAvgPos}
+                            </th>
+                          )}
                           <th className="px-3 py-2 whitespace-nowrap text-center border-l border-blue-200 bg-blue-50">
                             {t.predSummaryYourPick}
                           </th>
@@ -507,6 +528,11 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                               <td className="px-3 py-2 text-center text-gray-500">
                                 {row.actualPosition ?? "—"}
                               </td>
+                              {isLeague && (
+                                <td className="px-3 py-2 text-center tabular-nums text-gray-500">
+                                  {row.avgPredicted !== null ? row.avgPredicted.toFixed(1) : "—"}
+                                </td>
+                              )}
                               <td className={`px-3 py-2 text-center whitespace-nowrap border-l border-blue-200 ${groupPosCellClass(row.myPts, isLeague)}`}>
                                 {row.myPick ?? "—"}
                               </td>
