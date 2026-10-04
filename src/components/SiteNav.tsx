@@ -13,14 +13,24 @@ export default async function SiteNav() {
   const dict = await getDict();
   const locale = await getLocale();
 
-  // Logged-out pages (login/signup) render their own standalone layout, but the language
-  // toggle still needs to be reachable there so someone can switch before signing up.
+  // A visitor needs a way home and a way in from every page, including the public ones (rules,
+  // the prediction form), so the brand is a link and login / sign-up are always at the top.
   if (!user) {
     return (
       <header className="border-b">
-        <nav className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 text-sm">
-          <span className="font-semibold">{dict.appName}</span>
-          <LanguageToggle locale={locale} />
+        <nav className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-sm">
+          <Link href="/" className="font-semibold">
+            {dict.appName}
+          </Link>
+          <div className="ml-auto flex items-center gap-3">
+            <LanguageToggle locale={locale} />
+            <Link href="/login" className="text-gray-700 hover:text-gray-900">
+              {dict.nav.logIn}
+            </Link>
+            <Link href="/signup" className="rounded bg-blue-600 px-3 py-1.5 font-medium text-white hover:bg-blue-700">
+              {dict.nav.signUp}
+            </Link>
+          </div>
         </nav>
       </header>
     );

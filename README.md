@@ -1,4 +1,4 @@
-# Typer ME 2026
+# Typer Szóstego Seta
 
 Next.js + Supabase prediction pool for the 2026 men's volleyball European Championship.
 Users sign up, optionally create/join private groups, predict the group-stage order and the

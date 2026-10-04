@@ -9,7 +9,7 @@ export const LOCALE_COOKIE = "locale";
 // `pl` is deliberately not `as const`: its string literals widen to `string`, so it can serve
 // as the shared shape. Typing `en` as Dict then makes a missing or misspelled key a build error.
 const pl = {
-    appName: "Typer",
+    appName: "Typer Szóstego Seta",
     tournamentLong: "Mistrzostwa Europy 2026",
     groupLabel: "Grupa {code}",
 
@@ -23,6 +23,8 @@ const pl = {
       stats: "Statystyki",
       jasnowidz: "Jasnowidz",
       jasnowidzRanking: "Ranking Jasnowidz",
+      logIn: "Zaloguj się",
+      signUp: "Załóż konto",
       signOut: "Wyloguj",
     },
 
@@ -409,10 +411,18 @@ const pl = {
       league: {
         tagline: "Typer siatkarskiej TAURON Ligi",
         lead: "Ustaw przewidywaną tabelę sezonu, a drabinka play-offów ułoży się sama. Typuj też wyniki poszczególnych meczów. Rywalizuj ze znajomymi w prywatnej grupie albo w rankingu ogólnym.",
+        whatTitle: "Trzy konkurencje",
+        whatC: "Jasnowidz",
+        whatCDesc:
+          "Odpowiedz na pytania o cały sezon: kto zdobędzie medale, które drużyny i którzy zawodnicy będą najlepsi w poszczególnych statystykach, jak zagrają wybrani gracze. Odpowiedzi możesz zmieniać do pierwszej piłki sezonu. Osobny ranking.",
+        whatCSoon: "Wkrótce",
+        ctaPrimary: "Wypełnij swój typ sezonu",
         whatA: "Typ sezonu",
         whatADesc: "Jeden typ na cały sezon: końcowa tabela fazy zasadniczej wszystkich 14 drużyn i cała drabinka play-offów aż do finału.",
-        whatBDesc: "Typuj wynik w setach każdego z {n} meczów fazy zasadniczej. Mecz otwiera się, gdy liga ogłosi godzinę jego rozpoczęcia, i zamyka przy pierwszej piłce.",
-        deadlineBody: "Typ sezonu liczy się do rankingu, jeśli zapiszesz go przed pierwszą piłką sezonu — {deadline}.",
+        whatBDesc:
+          "Typuj wynik w setach każdego z {n} meczów fazy zasadniczej oraz meczów playoff. Mecze otwierają się do typowania, gdy liga ogłosi godzinę ich rozpoczęcia, i zamykają się przy pierwszej piłce.",
+        deadlineBody:
+          "Typ sezonu oraz Jasnowidz liczą się do rankingu, jeśli zapiszesz je przed pierwszą piłką sezonu — {deadline}.",
       },
     },
     common: {
@@ -424,7 +434,7 @@ const pl = {
 export type Dict = typeof pl;
 
 const en: Dict = {
-    appName: "Typer",
+    appName: "Typer Szóstego Seta",
     tournamentLong: "European Championship 2026",
     groupLabel: "Group {code}",
 
@@ -438,6 +448,8 @@ const en: Dict = {
       stats: "Stats",
       jasnowidz: "Jasnowidz",
       jasnowidzRanking: "Jasnowidz ranking",
+      logIn: "Log in",
+      signUp: "Sign up",
       signOut: "Sign out",
     },
 
@@ -824,10 +836,18 @@ const en: Dict = {
       league: {
         tagline: "Predictions for the TAURON Liga volleyball season",
         lead: "Set your predicted season table and the playoff bracket builds itself. Predict individual match scores too. Compete with friends in a private group or on the global leaderboard.",
+        whatTitle: "Three competitions",
+        whatC: "Jasnowidz",
+        whatCDesc:
+          "Answer questions about the whole season: who takes the medals, which teams and players lead the individual statistics, how specific players will do. You can change your answers until the first ball of the season. Separate ranking.",
+        whatCSoon: "Coming soon",
+        ctaPrimary: "Fill in your season prediction",
         whatA: "Season prediction",
         whatADesc: "One prediction for the whole season: the final regular-season table of all 14 teams and the full playoff bracket through to the final.",
-        whatBDesc: "Predict the set score of each of the {n} regular-season matches. A match opens once the league announces its kick-off time, and locks at the first ball.",
-        deadlineBody: "Your season prediction counts toward the leaderboard if you save it before the first ball of the season — {deadline}.",
+        whatBDesc:
+          "Predict the set score of each of the {n} regular-season matches and the playoff matches. Matches open for predictions once the league announces their kick-off times, and close at the first ball.",
+        deadlineBody:
+          "Your season prediction and Jasnowidz count toward the leaderboard if you save them before the first ball of the season — {deadline}.",
       },
     },
     common: {
