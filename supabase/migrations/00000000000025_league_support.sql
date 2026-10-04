@@ -14,7 +14,19 @@ create unique index if not exists matches_source_key on matches (tournament_id, 
 alter table matches add column if not exists round int;
 alter table matches add column if not exists scheduled_date date;
 
-alter table matches drop constraint if exists matches_stage_check;
+-- Drop whichever check constraint covers "stage", whatever it is named, so a database created
+-- another way (e.g. through the SQL editor) can't keep an old check that rejects the new stages.
+do $$
+declare c record;
+begin
+  for c in
+    select conname from pg_constraint
+     where conrelid = 'public.matches'::regclass and contype = 'c'
+       and pg_get_constraintdef(oid) like '%stage%'
+  loop
+    execute format('alter table matches drop constraint %I', c.conname);
+  end loop;
+end $$;
 alter table matches add constraint matches_stage_check
   check (stage in ('group', 'round_of_16', 'quarterfinal', 'semifinal', 'bronze', 'final',
                    'regular_season', 'fifth_place'));
