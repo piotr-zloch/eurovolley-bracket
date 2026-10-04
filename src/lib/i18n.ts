@@ -299,7 +299,9 @@ const pl = {
       groupStatsNoData: "Brak danych z fazy grupowej.",
       groupStatsTitleLeague: "Statystyki pozycji",
       groupStatsIntroLeague:
-        "Rozkład typowanych pozycji w tabeli dla każdej drużyny. Podświetlona kolumna to pozycja końcowa po 26 kolejkach.",
+        "Rozkład typowanych pozycji w tabeli dla każdej drużyny. Drużyny są ułożone według średniej pozycji, jaką typują gracze (od najwyżej do najniżej typowanych). Podświetlona kolumna to pozycja końcowa po 26 kolejkach.",
+      groupStatsAvgPos: "Śr. typ",
+      groupStatsAvgPosHint: "Średnia pozycja typowana przez wszystkich graczy",
       legendEuro: [
         "10 pkt — dokładna pozycja",
         "6 pkt — 1 miejsce różnicy",
@@ -764,7 +766,9 @@ const en: Dict = {
       groupStatsNoData: "No group stage data yet.",
       groupStatsTitleLeague: "Position stats",
       groupStatsIntroLeague:
-        "Distribution of predicted table positions for each team. The highlighted column is the final position after 26 rounds.",
+        "Distribution of predicted table positions for each team. Teams are listed by the average position the players predict, highest-ranked first. The highlighted column is the final position after 26 rounds.",
+      groupStatsAvgPos: "Avg. pick",
+      groupStatsAvgPosHint: "Average position predicted by all players",
       legendEuro: [
         "10 pts — exact position",
         "6 pts — 1 place off",
