@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Typer ME 2026",
+  title: "Typer",
   description:
-    "Typuj fazę grupową i drabinkę pucharową siatkarskich mistrzostw Europy 2026. / Predict the group stage and knockout bracket of the 2026 men's volleyball European Championship.",
+    "Typer siatkarski: typuj tabelę, drabinkę i wyniki meczów. / Volleyball predictions: league tables, brackets and match scores.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

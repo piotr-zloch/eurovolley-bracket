@@ -9,7 +9,7 @@ export const LOCALE_COOKIE = "locale";
 // `pl` is deliberately not `as const`: its string literals widen to `string`, so it can serve
 // as the shared shape. Typing `en` as Dict then makes a missing or misspelled key a build error.
 const pl = {
-    appName: "Typer ME 2026",
+    appName: "Typer",
     tournamentLong: "Mistrzostwa Europy 2026",
     groupLabel: "Grupa {code}",
 
@@ -344,6 +344,16 @@ const pl = {
       deadlineTitle: "Termin",
       deadlineBody: "Typ turnieju liczy się do rankingu, jeśli zapiszesz go przed pierwszym meczem — 9 września 2026, 18:00.",
       rulesLink: "Zobacz pełne zasady punktacji",
+      noActive: "Obecnie nie trwa żadna rywalizacja.",
+      archiveCta: "Zobacz archiwum: {name}",
+      league: {
+        tagline: "Typer siatkarskiej PlusLigi",
+        lead: "Ustaw przewidywaną tabelę sezonu, a drabinka play-offów ułoży się sama. Typuj też wyniki poszczególnych meczów. Rywalizuj ze znajomymi w prywatnej grupie albo w rankingu ogólnym.",
+        whatA: "Typ sezonu",
+        whatADesc: "Jeden typ na cały sezon: końcowa tabela fazy zasadniczej wszystkich 14 drużyn i cała drabinka play-offów aż do finału.",
+        whatBDesc: "Typuj wynik w setach każdego z {n} meczów fazy zasadniczej. Mecz otwiera się, gdy liga ogłosi godzinę jego rozpoczęcia, i zamyka przy pierwszej piłce.",
+        deadlineBody: "Typ sezonu liczy się do rankingu, jeśli zapiszesz go przed pierwszą piłką sezonu — {deadline}.",
+      },
     },
     common: {
       noTournament: "Nie skonfigurowano jeszcze turnieju.",
@@ -354,7 +364,7 @@ const pl = {
 export type Dict = typeof pl;
 
 const en: Dict = {
-    appName: "Typer ME 2026",
+    appName: "Typer",
     tournamentLong: "European Championship 2026",
     groupLabel: "Group {code}",
 
@@ -689,6 +699,16 @@ const en: Dict = {
       deadlineTitle: "Deadline",
       deadlineBody: "Your tournament prediction counts toward the leaderboard if you save it before the first match — 9 September 2026, 18:00 CEST.",
       rulesLink: "See the full scoring rules",
+      noActive: "No competition is running right now.",
+      archiveCta: "See the archive: {name}",
+      league: {
+        tagline: "Predictions for the PlusLiga volleyball season",
+        lead: "Set your predicted season table and the playoff bracket builds itself. Predict individual match scores too. Compete with friends in a private group or on the global leaderboard.",
+        whatA: "Season prediction",
+        whatADesc: "One prediction for the whole season: the final regular-season table of all 14 teams and the full playoff bracket through to the final.",
+        whatBDesc: "Predict the set score of each of the {n} regular-season matches. A match opens once the league announces its kick-off time, and locks at the first ball.",
+        deadlineBody: "Your season prediction counts toward the leaderboard if you save it before the first ball of the season — {deadline}.",
+      },
     },
     common: {
       noTournament: "No tournament configured yet.",
