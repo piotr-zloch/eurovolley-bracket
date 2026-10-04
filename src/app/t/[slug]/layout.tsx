@@ -51,6 +51,11 @@ export default async function TournamentLayout({
             <Link href={`${base}/stats`} className={link}>
               {dict.nav.stats}
             </Link>
+            {tournament.type === "league" && (tournament.jasnowidz_enabled || adminRow) && (
+              <Link href={`${base}/jasnowidz`} className={link}>
+                {dict.nav.jasnowidz}
+              </Link>
+            )}
             <Link href={`${base}/rules`} className={link}>
               {dict.nav.rules}
             </Link>

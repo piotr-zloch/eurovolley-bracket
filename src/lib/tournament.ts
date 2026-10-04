@@ -9,9 +9,11 @@ export type Tournament = {
   type: "euro" | "league";
   status: "draft" | "active" | "archived";
   prediction_deadline: string;
+  /** Jasnowidz (the season question game) is open to players; admins can always see it. */
+  jasnowidz_enabled: boolean;
 };
 
-const COLUMNS = "id, name, slug, type, status, prediction_deadline";
+const COLUMNS = "id, name, slug, type, status, prediction_deadline, jasnowidz_enabled";
 
 /** Resolves the tournament named in the URL, or renders the 404 page. */
 export async function getTournamentBySlug(
