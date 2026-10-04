@@ -13,7 +13,7 @@ export async function loadRoster(
     .eq("tournament_id", tournamentId);
   const { data: playerRows } = await supabase
     .from("players")
-    .select("source_id, name, position, team:team_id(source_id)")
+    .select("source_id, name, display_name, position, team:team_id(source_id)")
     .eq("tournament_id", tournamentId);
 
   const teams: Team[] = (teamRows ?? [])
@@ -25,6 +25,7 @@ export async function loadRoster(
     return {
       source_id: p.source_id as number,
       name: p.name as string,
+      display_name: (p.display_name as string | null) ?? null,
       position: (p.position as string | null) ?? null,
       team_source_id: (team?.source_id as number | undefined) ?? null,
     };
