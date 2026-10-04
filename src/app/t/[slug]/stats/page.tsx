@@ -2,12 +2,11 @@ import { getTournamentBySlug } from "@/lib/tournament";
 import { requireUser } from "@/lib/require-user";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { fmt } from "@/lib/i18n";
+import { leagueSlotLabel } from "@/lib/league-bracket";
 import CollapsibleSection from "./CollapsibleSection";
 
 const SCORES = ["3:0", "3:1", "3:2", "2:3", "1:3", "0:3"] as const;
 type Score = (typeof SCORES)[number];
-
-const POSITIONS = [1, 2, 3, 4, 5, 6] as const;
 
 const BRACKET_SLOT_ORDER = [
   "EF1","EF2","EF3","EF4","EF5","EF6","EF7","EF8",
@@ -16,7 +15,15 @@ const BRACKET_SLOT_ORDER = [
   "FINAL","BRONZE",
 ] as const;
 
+// League playoff slots (P-prefixed so they never collide with the Euro ones).
+const LEAGUE_SLOT_ORDER = ["PQF1", "PQF2", "PQF3", "PQF4", "PSF1", "PSF2", "P5TH", "PBRONZE", "PFINAL"] as const;
+
 function bracketPairPoints(slot: string): number {
+  if (/^PQF[1-4]$/.test(slot)) return 2;
+  if (/^PSF[1-2]$/.test(slot)) return 4;
+  if (slot === "PBRONZE") return 4;
+  if (slot === "P5TH") return 2;
+  if (slot === "PFINAL") return 8;
   if (/^EF[1-8]$/.test(slot)) return 2;
   if (/^QF[1-4]$/.test(slot)) return 4;
   if (/^SF[1-2]$/.test(slot)) return 8;
@@ -26,6 +33,11 @@ function bracketPairPoints(slot: string): number {
 }
 
 function bracketSlotPoints(slot: string): number {
+  if (/^PQF[1-4]$/.test(slot)) return 4;
+  if (/^PSF[1-2]$/.test(slot)) return 8;
+  if (slot === "PBRONZE") return 8;
+  if (slot === "P5TH") return 4;
+  if (slot === "PFINAL") return 16;
   if (/^EF[1-8]$/.test(slot)) return 4;
   if (/^QF[1-4]$/.test(slot)) return 8;
   if (/^SF[1-2]$/.test(slot)) return 16;
@@ -35,6 +47,8 @@ function bracketSlotPoints(slot: string): number {
 }
 
 function slotRound(slot: string): string {
+  if (slot.startsWith("PQF")) return "PQF";
+  if (slot.startsWith("PSF")) return "PSF";
   if (slot.startsWith("EF")) return "EF";
   if (slot.startsWith("QF")) return "QF";
   if (slot.startsWith("SF")) return "SF";
@@ -59,12 +73,22 @@ function computeMatchPoints(ph: number, pa: number, ah: number, aa: number): num
   return Math.min(ph, pa) === 2 && Math.min(ah, aa) === 2 ? 2 : 0;
 }
 
-function computeGroupPoints(predicted: number, actual: number): number {
-  return 10 - 4 * Math.abs(predicted - actual);
+/** Euro group: 10 minus 4 per place off. League table: 14 minus 1 per place off. */
+function computeGroupPoints(predicted: number, actual: number, league: boolean): number {
+  const off = Math.abs(predicted - actual);
+  return league ? 14 - off : 10 - 4 * off;
 }
 
-function groupPosCellClass(pts: number | null): string {
+/** Colour by how far off the pick was, on the same five bands as the legend. */
+function groupPosCellClass(pts: number | null, league: boolean): string {
   if (pts === null) return "bg-blue-50";
+  if (league) {
+    if (pts === 14) return "bg-green-600 text-white";
+    if (pts === 13) return "bg-green-100 text-green-800";
+    if (pts >= 11) return "bg-yellow-100 text-yellow-800";
+    if (pts >= 8) return "bg-orange-100 text-orange-800";
+    return "bg-red-100 text-red-700";
+  }
   if (pts === 10) return "bg-green-600 text-white";
   if (pts >= 6) return "bg-green-100 text-green-800";
   if (pts >= 2) return "bg-yellow-100 text-yellow-800";
@@ -108,6 +132,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
   const locale = await getLocale();
 
   const tournament = await getTournamentBySlug(supabase, slug);
+  const isLeague = tournament.type === "league";
 
   const teamName = (tm: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && tm?.name_pl) || tm?.name || "?";
@@ -268,7 +293,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
       const teamId = (Array.isArray(gt.teams) ? gt.teams[0] : gt.teams)?.id as number | undefined;
       const myPick = teamId != null ? (myGroupPickMap.get(`${g.id}:${teamId}`) ?? null) : null;
       const myPts =
-        myPick !== null && actualPosition !== null ? computeGroupPoints(myPick, actualPosition) : null;
+        myPick !== null && actualPosition !== null ? computeGroupPoints(myPick, actualPosition, isLeague) : null;
       return {
         groupTeamsId: gt.id as number,
         groupCode: g.code as string,
@@ -291,6 +316,8 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
   }
 
   const groupCodes = [...groupMap.keys()].sort();
+  const maxTeams = Math.max(0, ...[...groupMap.values()].map((rows) => rows.length));
+  const positions = Array.from({ length: maxTeams }, (_, i) => i + 1);
 
   // ── Bracket stats ─────────────────────────────────────────────────────────────
 
@@ -355,7 +382,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
       ])
   );
 
-  const slotsWithData = (BRACKET_SLOT_ORDER as readonly string[]).filter((s) =>
+  const slotsWithData = ((isLeague ? LEAGUE_SLOT_ORDER : BRACKET_SLOT_ORDER) as readonly string[]).filter((s) =>
     bracketSlotData.has(s)
   );
 
@@ -376,25 +403,40 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
     SF: dict.predictions.semifinals,
     FINAL: dict.predictions.final,
     BRONZE: dict.predictions.bronze,
+    PQF: dict.predictions.quarterfinals,
+    PSF: dict.predictions.semifinals,
+    P5TH: dict.rules.league.fifth,
+    PBRONZE: dict.predictions.bronze,
+    PFINAL: dict.predictions.final,
   };
+
+  // The legend explains the same five colour bands the position table uses.
+  const legendText = isLeague ? t.legendLeague : t.legendEuro;
+  const legendItems = [
+    "bg-green-600 text-white",
+    "bg-green-100 text-green-800",
+    "bg-yellow-100 text-yellow-800",
+    "bg-orange-100 text-orange-800",
+    "bg-red-100 text-red-700",
+  ].map((cell, i) => {
+    const [chip, ...rest] = legendText[i].split(" — ");
+    return { cell, chip, label: rest.join(" — ") };
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-2xl font-bold">{dict.nav.stats}</h1>
 
       {/* ── Group stage ──────────────────────────────────────────────────────── */}
-      <CollapsibleSection title={t.groupStatsTitle} subtitle={t.groupStatsIntro}>
+      <CollapsibleSection
+        title={isLeague ? t.groupStatsTitleLeague : t.groupStatsTitle}
+        subtitle={isLeague ? t.groupStatsIntroLeague : t.groupStatsIntro}
+      >
         <div className="mb-4 flex flex-wrap gap-2 text-xs">
-          {[
-            { pts: 10, cell: "bg-green-600 text-white",      label: "10 pkt — dokładna pozycja" },
-            { pts: 6,  cell: "bg-green-100 text-green-800",  label: "6 pkt — 1 miejsce różnicy" },
-            { pts: 2,  cell: "bg-yellow-100 text-yellow-800",label: "2 pkt — 2 miejsca różnicy" },
-            { pts: 0,  cell: "bg-orange-100 text-orange-800",label: "0 pkt — 3 miejsca różnicy" },
-            { pts: -2, cell: "bg-red-100 text-red-700",      label: "−2 pkt (lub gorzej) — 4+ miejsca różnicy" },
-          ].map(({ pts, cell, label }) => (
-            <span key={pts} className="flex items-center gap-1.5">
+          {legendItems.map(({ cell, chip, label }) => (
+            <span key={chip} className="flex items-center gap-1.5">
               <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-medium ${cell}`}>
-                {pts}
+                {chip}
               </span>
               <span className="text-gray-500">{label}</span>
             </span>
@@ -409,7 +451,9 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
               const rows = groupMap.get(code)!;
               return (
                 <div key={code}>
-                  <h3 className="mb-2 font-semibold">{fmt(dict.groupLabel, { code })}</h3>
+                  <h3 className="mb-2 font-semibold">
+                    {isLeague ? dict.predictions.leagueTable : fmt(dict.groupLabel, { code })}
+                  </h3>
                   <div className="overflow-x-auto rounded border">
                     <table className="w-full table-fixed text-sm">
                       <colgroup>
@@ -418,7 +462,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                         <col className="w-20" />
                         <col className="w-16" />
                         <col className="w-14" />
-                        {POSITIONS.map((pos) => <col key={pos} className="w-12" />)}
+                        {positions.map((pos) => <col key={pos} className="w-12" />)}
                         <col className="w-20" />
                         <col className="w-16" />
                       </colgroup>
@@ -435,7 +479,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                           <th className="px-3 py-2 whitespace-nowrap text-center bg-blue-50 border-r border-blue-200">
                             {t.predSummaryVsAvg}
                           </th>
-                          {POSITIONS.map((pos) => (
+                          {positions.map((pos) => (
                             <th key={pos} className="px-3 py-2 text-center whitespace-nowrap">{pos}</th>
                           ))}
                           <th className="px-3 py-2 text-center whitespace-nowrap">{t.predSummaryTotal}</th>
@@ -463,7 +507,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                               <td className="px-3 py-2 text-center text-gray-500">
                                 {row.actualPosition ?? "—"}
                               </td>
-                              <td className={`px-3 py-2 text-center whitespace-nowrap border-l border-blue-200 ${groupPosCellClass(row.myPts)}`}>
+                              <td className={`px-3 py-2 text-center whitespace-nowrap border-l border-blue-200 ${groupPosCellClass(row.myPts, isLeague)}`}>
                                 {row.myPick ?? "—"}
                               </td>
                               <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50">
@@ -472,7 +516,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                               <td className={`px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50 border-r border-blue-200 ${diffClass}`}>
                                 {diffLabel}
                               </td>
-                              {POSITIONS.map((pos) => {
+                              {positions.map((pos) => {
                                 const count = row.counts[pos] ?? 0;
                                 const isCorrect = pos === row.actualPosition;
                                 const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
@@ -631,9 +675,12 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
       </CollapsibleSection>
 
       {/* ── Bracket predictions ──────────────────────────────────────────────── */}
-      <CollapsibleSection title={t.bracketStatsTitle} subtitle={t.bracketStatsIntro}>
+      <CollapsibleSection
+        title={isLeague ? t.bracketStatsTitleLeague : t.bracketStatsTitle}
+        subtitle={isLeague ? t.bracketStatsIntroLeague : t.bracketStatsIntro}
+      >
         {slotsWithData.length === 0 ? (
-          <p className="text-gray-500">{t.bracketStatsNoData}</p>
+          <p className="text-gray-500">{isLeague ? t.bracketStatsNoDataLeague : t.bracketStatsNoData}</p>
         ) : (
           <div className="flex flex-col gap-8">
             {roundGroups.map(({ round, slots }) => (
@@ -694,7 +741,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                       <div key={slot} className="overflow-hidden rounded border text-sm">
                         {/* Slot header */}
                         <div className="flex items-center justify-between border-b bg-gray-50 px-3 py-2">
-                          <span className="font-semibold">{slot}</span>
+                          <span className="font-semibold">{isLeague ? leagueSlotLabel(slot) : slot}</span>
                           <span className="text-xs text-gray-400">{total} {t.bracketStatsPredictors}</span>
                         </div>
 

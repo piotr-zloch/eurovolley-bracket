@@ -510,7 +510,10 @@ export default function TournamentPrediction({
       <div className="sticky bottom-0 flex flex-wrap items-center gap-3 border-t bg-white/95 py-4 backdrop-blur">
         {isLocked ? (
           <p className="text-sm text-gray-600">
-            <span className="font-medium">{t.lockedTitle}</span> {t.lockedBody}
+            <span className="font-medium">
+              {tournamentType === "league" ? t.lockedTitleLeague : t.lockedTitle}
+            </span>{" "}
+            {tournamentType === "league" ? t.lockedBodyLeague : t.lockedBody}
           </p>
         ) : (
           <button

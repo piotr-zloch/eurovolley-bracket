@@ -6,6 +6,7 @@ import { getTournamentBySlug, isArchived } from "@/lib/tournament";
 import { choicesFor, pointsEarned } from "@/lib/jasnowidz";
 import { loadQuestions, loadRoster } from "@/lib/jasnowidz-data";
 import JasnowidzForm, { type FormQuestion } from "./JasnowidzForm";
+import DeadlineBanner from "@/components/DeadlineBanner";
 
 export default async function JasnowidzPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -70,18 +71,19 @@ export default async function JasnowidzPage({ params }: { params: Promise<{ slug
   const locked = isArchived(tournament) || Date.now() >= deadlineMs;
   const preview = !tournament.jasnowidz_enabled;
 
-  const deadline = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "Europe/Warsaw",
-  }).format(new Date(tournament.prediction_deadline));
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      {!locked && (
+        <DeadlineBanner
+          template={t.deadlineBanner}
+          deadlineIso={tournament.prediction_deadline}
+          locale={locale}
+          dict={dict}
+        />
+      )}
       <h1 className="mb-2 text-2xl font-bold">{t.title}</h1>
       <p className="mb-2 text-sm text-gray-600">{t.intro}</p>
       <p className="mb-2 text-sm text-gray-500">{t.rulesHint}</p>
-      <p className="mb-4 text-sm text-gray-500">{fmt(t.deadline, { deadline })}</p>
       <p className="mb-6 text-sm">
         <Link href={`/t/${slug}/jasnowidz/ranking`} className="text-blue-600 underline">
           {t.rankingLink}
