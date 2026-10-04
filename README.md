@@ -201,6 +201,38 @@ Emails are **never** displayed anywhere in the app — players are identified on
   known limitations (the real match-score text format hasn't been observed yet — it fails safe by
   skipping and logging anything it can't parse, rather than guessing).
 
+## League schedule sync (PlusLiga)
+
+League fixtures are seeded with the dates the league has announced so far (migration 26). Most
+games have only a *preliminary date*, and a game is closed for picks until it has a kick-off time.
+A daily job keeps the database in step with the league's published schedule:
+
+- `vercel.json` runs `GET /api/cron/sync-schedule` every day at 05:00 UTC.
+- The route (`src/app/api/cron/sync-schedule/route.ts`) fetches `tauronliga.pl/games.html`, parses
+  it (`src/lib/tauronliga-schedule.ts`) and calls `sync_league_schedule()` (migration 27).
+- The function decides what may change: it sets and corrects kick-off times, but never touches a
+  game that has a result or has already started, never removes a time it already holds, and
+  refuses a feed with far fewer games than the database (a changed or half-loaded page).
+- The route has no database privileges of its own. It authenticates with `CRON_SECRET`, and the
+  database only stores that secret's SHA-256 hash (`sync_secrets`), so a leaked secret can do this
+  one thing and nothing else. Results are not synced; enter them in the admin panel.
+
+**One-time setup**
+
+1. Generate a secret, for example `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+2. In Vercel → Project → Settings → Environment Variables, add `CRON_SECRET` with that value
+   (Vercel then sends it as the Bearer token on every cron call).
+3. Store its hash in the database (SQL editor), with the same secret:
+   `insert into sync_secrets values ('schedule', encode(extensions.digest('<the secret>', 'sha256'), 'hex')) on conflict (name) do update set secret_hash = excluded.secret_hash;`
+4. Optional: `SCHEDULE_SYNC_SLUG` overrides the tournament (default `plusliga-2026-27`).
+
+**Run it by hand / check it**
+
+`curl -H "Authorization: Bearer <the secret>" https://<your-domain>/api/cron/sync-schedule` returns
+JSON such as `{"parsed":182,"time_set":7,"rescheduled":0,"unchanged":175,...,"changes":[...]}`.
+A non-200 status means nothing was applied; see the Vercel function logs for the reason.
+`supabase/tests/schedule_sync.sql` tests the database rules on a scratch database.
+
 ## Not yet built (next steps)
 
 - Password reset / email confirmation flows (Supabase handles the backend; UI pages aren't built yet).
