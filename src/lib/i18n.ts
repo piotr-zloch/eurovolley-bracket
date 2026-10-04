@@ -299,7 +299,16 @@ const pl = {
       groupStatsNoData: "Brak danych z fazy grupowej.",
       groupStatsTitleLeague: "Statystyki pozycji",
       groupStatsIntroLeague:
-        "Rozkład typowanych pozycji w tabeli dla każdej drużyny. Drużyny są ułożone według średniej pozycji, jaką typują gracze (od najwyżej do najniżej typowanych). Podświetlona kolumna to pozycja końcowa po 26 kolejkach.",
+        "Rozkład typowanych pozycji w tabeli dla każdej drużyny. Podświetlona kolumna to pozycja końcowa po 26 kolejkach.",
+      groupStatsHiddenNote:
+        "Typy pozostałych graczy (rozkład pozycji i średnią) pokażemy po zamknięciu typowania — {deadline} — żeby nikt nie typował na podstawie cudzych typów. Do tego czasu widzisz tylko swój typ.",
+      bracketStatsHiddenNote:
+        "Statystyki typów pokażemy po zamknięciu typowania — {deadline} — żeby nikt nie typował na podstawie cudzych typów.",
+      sortLabel: "Sortuj:",
+      sortMine: "Twój typ",
+      sortName: "Alfabetycznie",
+      sortAvg: "Średnia graczy",
+      sortFinal: "Pozycja końcowa",
       groupStatsAvgPos: "Śr. typ",
       groupStatsAvgPosHint: "Średnia pozycja typowana przez wszystkich graczy",
       legendEuro: [
@@ -766,7 +775,16 @@ const en: Dict = {
       groupStatsNoData: "No group stage data yet.",
       groupStatsTitleLeague: "Position stats",
       groupStatsIntroLeague:
-        "Distribution of predicted table positions for each team. Teams are listed by the average position the players predict, highest-ranked first. The highlighted column is the final position after 26 rounds.",
+        "Distribution of predicted table positions for each team. The highlighted column is the final position after 26 rounds.",
+      groupStatsHiddenNote:
+        "Other players’ picks (the distribution of positions and the average) will be shown once typing is closed — {deadline} — so nobody predicts off someone else’s picks. Until then you only see your own pick.",
+      bracketStatsHiddenNote:
+        "Pick statistics will be shown once typing is closed — {deadline} — so nobody predicts off someone else’s picks.",
+      sortLabel: "Sort by:",
+      sortMine: "Your pick",
+      sortName: "Alphabetical",
+      sortAvg: "Players’ average",
+      sortFinal: "Final position",
       groupStatsAvgPos: "Avg. pick",
       groupStatsAvgPosHint: "Average position predicted by all players",
       legendEuro: [
