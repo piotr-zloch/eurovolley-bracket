@@ -1,4 +1,4 @@
-import { getTournamentBySlug } from "@/lib/tournament";
+import { getTournamentBySlug, isArchived } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
@@ -31,7 +31,7 @@ export default async function MatchesPage({ params }: { params: Promise<{ slug: 
   const { data: rows } = await supabase
     .from("matches")
     .select(
-      "id, stage, group_id, bracket_slot, scheduled_at, venue, home_sets, away_sets, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
+      "id, stage, group_id, bracket_slot, round, scheduled_at, scheduled_date, venue, home_sets, away_sets, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
     )
     .eq("tournament_id", tournament.id)
     .order("scheduled_at", { nullsFirst: false });
@@ -84,14 +84,21 @@ export default async function MatchesPage({ params }: { params: Promise<{ slug: 
       const kickoffMs = m.scheduled_at ? new Date(m.scheduled_at as string).getTime() : null;
 
       const groupCode = m.stage === "group" ? groupCodeById.get(m.group_id as number) ?? null : null;
+      const round = m.stage === "regular_season" ? (m.round as number | null) : null;
       const label = groupCode
         ? fmt(dict.groupLabel, { code: groupCode })
-        : (m.bracket_slot as string) ?? dict.matches.knockoutLabel;
+        : round !== null
+          ? fmt(dict.matches.roundLabel, { n: round })
+          : (m.bracket_slot as string) ?? dict.matches.knockoutLabel;
 
       return {
         id: m.id,
         label,
         groupCode,
+        round,
+        date: (m.scheduled_date as string | null) ?? null,
+        // Teams known but no kick-off time yet: visible, but not open for picks.
+        timeTbd: !pending && !m.scheduled_at,
         venue: (m.venue as string) ?? null,
         pending,
         home: home ?? "—",
@@ -119,7 +126,7 @@ export default async function MatchesPage({ params }: { params: Promise<{ slug: 
         </Link>
       </p>
 
-      <MatchList matches={matches} dict={dict} locale={locale} />
+      <MatchList matches={matches} dict={dict} locale={locale} locked={isArchived(tournament)} />
     </div>
   );
 }

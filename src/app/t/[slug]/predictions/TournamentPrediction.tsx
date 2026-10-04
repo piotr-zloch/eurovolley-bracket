@@ -22,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { QF_SOURCES, ROUND_OF_16_TEMPLATE, SF_SOURCES } from "@/lib/knockout-template";
+import { buildLeagueBracket, leagueSlotLabel } from "@/lib/league-bracket";
 import { fmt, type Dict } from "@/lib/i18n";
 import { clearDraft, readDraft, writeDraft } from "@/lib/draft";
 import { saveAllPredictions } from "./actions";
@@ -85,6 +86,7 @@ function SortableTeamRow({
 
 export default function TournamentPrediction({
   tournamentId,
+  tournamentType,
   groups,
   initialOrders,
   initialPicks,
@@ -94,6 +96,7 @@ export default function TournamentPrediction({
   deadline,
 }: {
   tournamentId: number;
+  tournamentType: "euro" | "league";
   groups: Group[];
   initialOrders: Record<number, number[]>;
   initialPicks: Record<string, number>;
@@ -232,6 +235,19 @@ export default function TournamentPrediction({
   // The bracket is derived fresh on every render from the current group order, so dragging a
   // team updates the whole knockout tree immediately — no save required to see the effect.
   const { rounds, missingGroups, validPicks, pairs } = useMemo(() => {
+    if (tournamentType === "league") {
+      // One table group; the playoff bracket follows from its order (see lib/league-bracket.ts).
+      const table = groups[0] ? orders[groups[0].id] ?? [] : [];
+      const league = buildLeagueBracket(table, picks);
+      const titles = { quarterfinals: t.quarterfinals, semifinals: t.semifinals, finals: t.leagueFinalRow };
+      return {
+        rounds: league.rounds.map((r) => ({ title: titles[r.key], slots: r.slots })),
+        missingGroups: [] as string[],
+        validPicks: league.validPicks,
+        pairs: league.pairs,
+      };
+    }
+
     const missing = new Set<string>();
     const valid: Record<string, number> = {};
 
@@ -307,7 +323,7 @@ export default function TournamentPrediction({
           .map((s) => [s.slot, [s.home!.id, s.away!.id] as [number, number]])
       ),
     };
-  }, [orders, picks, groupByCode, t]);
+  }, [orders, picks, groupByCode, t, tournamentType, groups]);
 
   validPicksRef.current = validPicks;
 
@@ -374,10 +390,18 @@ export default function TournamentPrediction({
   return (
     <div className="flex flex-col gap-10">
       <section>
-        <h2 className="text-lg font-semibold">{t.groupStage}</h2>
-        <p className="mb-4 text-sm text-gray-500">{t.groupStageHint}</p>
+        <h2 className="text-lg font-semibold">
+          {tournamentType === "league" ? t.leagueTable : t.groupStage}
+        </h2>
+        <p className="mb-4 text-sm text-gray-500">
+          {tournamentType === "league" ? t.leagueTableHint : t.groupStageHint}
+        </p>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div
+          className={`grid grid-cols-1 gap-6 ${
+            tournamentType === "league" ? "max-w-md" : "sm:grid-cols-2"
+          }`}
+        >
           {groups.map((g) => (
             <div key={g.id} className="rounded border p-4">
               <h3 className="mb-3 font-medium">{g.name}</h3>
@@ -412,8 +436,12 @@ export default function TournamentPrediction({
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold">{t.knockout}</h2>
-        <p className="mb-4 text-sm text-gray-500">{t.knockoutHint}</p>
+        <h2 className="text-lg font-semibold">
+          {tournamentType === "league" ? t.leaguePlayoffs : t.knockout}
+        </h2>
+        <p className="mb-4 text-sm text-gray-500">
+          {tournamentType === "league" ? t.leaguePlayoffsHint : t.knockoutHint}
+        </p>
 
         {missingGroups.length > 0 && (
           <p className="mb-4 rounded bg-yellow-50 p-3 text-sm text-yellow-800">
@@ -438,7 +466,9 @@ export default function TournamentPrediction({
                     return (
                       <div key={s.slot} className="flex flex-1 justify-center">
                         <div className="flex w-[118px] flex-col gap-1 rounded border p-2 text-sm">
-                          <span className="text-xs text-gray-400">{s.slot}</span>
+                          <span className="text-xs text-gray-400">
+                            {tournamentType === "league" ? leagueSlotLabel(s.slot) : s.slot}
+                          </span>
                           {[s.home, s.away].map((team, side) =>
                             team ? (
                               <button

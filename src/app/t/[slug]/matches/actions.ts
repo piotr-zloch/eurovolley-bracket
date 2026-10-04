@@ -30,7 +30,9 @@ export async function saveMatchPredictions(picks: MatchPick[]) {
       .filter((m) => {
         const t = Array.isArray(m.tournaments) ? m.tournaments[0] : m.tournaments;
         if (t?.status === "archived") return false;
-        return !m.scheduled_at || new Date(m.scheduled_at).getTime() > now;
+        // No kick-off time published yet (date-only fixture): not open for picks.
+        if (!m.scheduled_at) return false;
+        return new Date(m.scheduled_at).getTime() > now;
       })
       .map((m) => m.id)
   );
