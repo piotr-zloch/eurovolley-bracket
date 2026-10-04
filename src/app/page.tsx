@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { getOptionalUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
 import { getDict, getLocale } from "@/lib/i18n-server";
-import { getActiveTournament } from "@/lib/tournament";
+import { getActiveTournament, listTournaments } from "@/lib/tournament";
+import TournamentNav from "@/components/TournamentNav";
 
 export default async function Home() {
   const { supabase, user } = await getOptionalUser();
@@ -63,8 +64,12 @@ export default async function Home() {
   }
 
   const base = `/t/${live.slug}`;
+  const tournaments = await listTournaments(supabase);
 
   return (
+    <>
+    {/* The same section menu as inside the competition, so the home page is not a dead end. */}
+    <TournamentNav tournament={live} tournaments={tournaments} loggedIn={false} isAdmin={false} dict={dict} />
     <div className="mx-auto max-w-2xl px-4 py-16">
       <h1 className="text-3xl font-bold">{dict.appName}</h1>
       <p className="mt-1 text-gray-500">{copy.tagline}</p>
@@ -107,13 +112,6 @@ export default async function Home() {
               )}
             </div>
             <p className="mt-1 text-sm text-gray-600">{copy.whatCDesc}</p>
-            {live.jasnowidz_enabled && (
-              <p className="mt-2 text-sm">
-                <Link href={`${base}/jasnowidz`} className="text-blue-600 underline">
-                  {copy.whatCCta}
-                </Link>
-              </p>
-            )}
           </div>
         )}
       </div>
@@ -129,5 +127,6 @@ export default async function Home() {
         </Link>
       </p>
     </div>
+    </>
   );
 }
