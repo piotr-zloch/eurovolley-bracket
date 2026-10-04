@@ -43,7 +43,7 @@ export default function TournamentNav({
       <nav className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm">
         <span className="font-medium">{tournament.name}</span>
         <Link href={`${base}/predictions`} className={link}>
-          {dict.nav.predictions}
+          {tournament.type === "league" ? dict.nav.predictionsLeague : dict.nav.predictions}
         </Link>
         {loggedIn && (
           <Link href={`${base}/matches`} className={link}>

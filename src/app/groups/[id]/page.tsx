@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
 import { plural } from "@/lib/i18n";
-import { getDict } from "@/lib/i18n-server";
+import { getDict, getLocale } from "@/lib/i18n-server";
+import { fmt } from "@/lib/i18n";
 
 type Row = {
   userId: string;
@@ -24,7 +25,7 @@ export default async function GroupLeaderboardPage({
 
   const { data: group } = await supabase
     .from("prediction_groups")
-    .select("id, name, invite_code, owner_id")
+    .select("id, name, invite_code, owner_id, tournament_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -38,6 +39,21 @@ export default async function GroupLeaderboardPage({
       </div>
     );
   }
+
+  // Which competition the group plays in decides the wording (groups and a knockout bracket for
+  // the Euro; one table and playoffs for a league).
+  const { data: tournament } = await supabase
+    .from("tournaments")
+    .select("type, prediction_deadline")
+    .eq("id", group.tournament_id)
+    .maybeSingle();
+  const isLeague = tournament?.type === "league";
+  const locale = await getLocale();
+  const startDate = tournament
+    ? new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", { dateStyle: "long", timeZone: "Europe/Warsaw" }).format(
+        new Date(tournament.prediction_deadline as string)
+      )
+    : "";
 
   // Build the member list from membership + owner, so everyone shows up even before any
   // results exist (scores rows only appear once an admin has recomputed).
@@ -85,7 +101,7 @@ export default async function GroupLeaderboardPage({
         <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono">{group.invite_code}</span>
       </p>
 
-      {!scored && <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{t.noResults}</p>}
+      {!scored && <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{isLeague ? fmt(t.noResultsLeague, { date: startDate }) : t.noResults}</p>}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
@@ -93,8 +109,8 @@ export default async function GroupLeaderboardPage({
             <tr className="border-b text-left">
               <th className="py-2 pr-2">{t.rank}</th>
               <th className="py-2">{t.player}</th>
-              <th className="py-2 text-right">{t.groupsCol}</th>
-              <th className="py-2 text-right">{t.bracketCol}</th>
+              <th className="py-2 text-right">{isLeague ? t.groupsColLeague : t.groupsCol}</th>
+              <th className="py-2 text-right">{isLeague ? t.bracketColLeague : t.bracketCol}</th>
               <th className="py-2 text-right">{t.matchesCol}</th>
               <th className="py-2 text-right">{t.total}</th>
             </tr>
@@ -130,7 +146,7 @@ export default async function GroupLeaderboardPage({
       </div>
 
       <p className="mt-6 text-xs text-gray-500">
-        {t.rules}{" "}
+        {isLeague ? t.rulesLeague : t.rules}{" "}
         <Link href="/rules" className="text-blue-600 underline">
           {t.rulesLink}
         </Link>

@@ -1,7 +1,8 @@
 import { getTournamentBySlug } from "@/lib/tournament";
 import Link from "next/link";
 import { requireUser } from "@/lib/require-user";
-import { getDict } from "@/lib/i18n-server";
+import { getDict, getLocale } from "@/lib/i18n-server";
+import { fmt } from "@/lib/i18n";
 import LeaderboardTable from "./LeaderboardTable";
 
 export default async function GlobalLeaderboardPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -16,6 +17,14 @@ export default async function GlobalLeaderboardPage({ params }: { params: Promis
     .not("username", "is", null);
 
   const tournament = await getTournamentBySlug(supabase, slug);
+  const isLeague = tournament.type === "league";
+  const locale = await getLocale();
+  // The "no results yet" note names the day the competition starts; for a league that is the
+  // tournament's own deadline, not a fixed Euro date.
+  const startDate = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", {
+    dateStyle: "long",
+    timeZone: "Europe/Warsaw",
+  }).format(new Date(tournament.prediction_deadline));
 
   // global_scores holds one row per user per tournament, so this must be filtered or a second
   // competition's totals would be mixed into this table.
@@ -54,13 +63,13 @@ export default async function GlobalLeaderboardPage({ params }: { params: Promis
       </p>
 
       {!anyScored && (
-        <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{t.noResults}</p>
+        <p className="mb-4 rounded bg-blue-50 p-3 text-sm text-blue-800">{isLeague ? fmt(t.noResultsLeague, { date: startDate }) : t.noResults}</p>
       )}
 
-      <LeaderboardTable rows={rows} currentUserId={user.id} dict={dict} />
+      <LeaderboardTable rows={rows} currentUserId={user.id} dict={dict} league={isLeague} />
 
       <p className="mt-6 text-xs text-gray-500">
-        {t.rules}{" "}
+        {isLeague ? t.rulesLeague : t.rules}{" "}
         <Link href={`/t/${slug}/rules`} className="text-blue-600 underline">
           {t.rulesLink}
         </Link>

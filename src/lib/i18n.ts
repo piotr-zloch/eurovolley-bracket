@@ -15,6 +15,7 @@ const pl = {
 
     nav: {
       predictions: "Typuj turniej",
+      predictionsLeague: "Typuj rozgrywki",
       leaderboard: "Ranking Typer",
       matches: "Typuj mecze",
       rules: "Zasady",
@@ -43,6 +44,8 @@ const pl = {
       rulesHint:
         "Za każdą trafioną odpowiedź dostajesz punkty podane przy pytaniu. Część o drużynach dotyczy wszystkich. Pytania dodatkowe są dobrowolne — jeśli nie odpowiesz na żadne z nich, jesteś klasyfikowany tylko w rankingu drużynowym.",
       deadline: "Odpowiedzi przyjmujemy do: {deadline}.",
+      deadlineBanner:
+        "Odpowiedzi w Jasnowidzu możesz zmieniać do pierwszej piłki sezonu: {deadline} ({left}). Po tym terminie są zamknięte.",
       teamsSection: "Pytania o drużyny",
       extendedSection: "Pytania dodatkowe (dobrowolne)",
       points: "{n} pkt",
@@ -158,6 +161,11 @@ const pl = {
       saved: "Zapisano!",
       saveError: "Nie udało się zapisać.",
       unsaved: "Masz niezapisane zmiany.",
+      lockedTitleLeague: "Typowanie sezonu zamknięte.",
+      lockedBodyLeague:
+        "Sezon się rozpoczął, więc typ sezonu jest już zamknięty i liczy się ten zapisany przed pierwszą piłką. Możesz nadal układać tabelę i play-offy dla zabawy — zmiany nie zostaną zapisane. Typy meczowe działają normalnie przez cały sezon.",
+      deadlineBanner:
+        "Typ sezonu (tabelę i play-offy) możesz zmieniać do pierwszej piłki sezonu: {deadline} ({left}). Po tym terminie jest zamknięty. Typy meczowe zamykają się osobno, przy pierwszej piłce każdego meczu.",
       lockedTitle: "Typowanie turnieju zamknięte.",
       lockedBody:
         "Turniej się rozpoczął, więc typ turnieju jest już zamknięty i liczy się ten zapisany przed pierwszą piłką. Możesz nadal układać drabinkę dla zabawy — zmiany nie zostaną zapisane. Typy meczowe działają normalnie przez cały turniej.",
@@ -182,6 +190,11 @@ const pl = {
       privateGroupsTail: "mają własne rankingi.",
       noResults:
         "Nie ma jeszcze wyników — ranking wypełni się po rozpoczęciu turnieju (9 września 2026).",
+      noResultsLeague: "Nie ma jeszcze wyników — ranking wypełni się po rozpoczęciu rozgrywek ({date}).",
+      groupsColLeague: "Tabela",
+      bracketColLeague: "Play-offy",
+      rulesLeague:
+        "Tabela sezonu: za każdą drużynę 14 punktów minus 1 za każde miejsce różnicy względem Twojego typu. Play-offy: trafiony zwycięzca meczu to 4 punkty za ćwierćfinał, 8 za półfinał i mecz o 3. miejsce, 4 za mecz o 5. miejsce i 16 za finał; za trafioną parę połowa tych punktów.",
       rank: "#",
       player: "Gracz",
       groupsCol: "Grupy",
@@ -284,9 +297,29 @@ const pl = {
       groupStatsTeam: "Drużyna",
       groupStatsPos: "Poz.",
       groupStatsNoData: "Brak danych z fazy grupowej.",
+      groupStatsTitleLeague: "Statystyki pozycji",
+      groupStatsIntroLeague:
+        "Rozkład typowanych pozycji w tabeli dla każdej drużyny. Podświetlona kolumna to pozycja końcowa po 26 kolejkach.",
+      legendEuro: [
+        "10 pkt — dokładna pozycja",
+        "6 pkt — 1 miejsce różnicy",
+        "2 pkt — 2 miejsca różnicy",
+        "0 pkt — 3 miejsca różnicy",
+        "−2 pkt (lub gorzej) — 4+ miejsca różnicy",
+      ],
+      legendLeague: [
+        "14 pkt — dokładna pozycja",
+        "13 pkt — 1 miejsce różnicy",
+        "12–11 pkt — 2–3 miejsca różnicy",
+        "10–8 pkt — 4–6 miejsc różnicy",
+        "7 pkt lub mniej — 7 i więcej miejsc różnicy",
+      ],
       bracketStatsTitle: "Statystyki fazy pucharowej",
       bracketStatsIntro: "Rozkład typowanych par i zwycięzców dla każdego meczu fazy pucharowej.",
       bracketStatsNoData: "Brak typów fazy pucharowej.",
+      bracketStatsTitleLeague: "Statystyki play-offów",
+      bracketStatsIntroLeague: "Rozkład typowanych par i zwycięzców dla każdego meczu play-offów.",
+      bracketStatsNoDataLeague: "Brak typów play-offów.",
       bracketStatsPairPts: "Para",
       bracketStatsWinnerPts: "Wynik",
       bracketStatsAvgAll: "Śr. wszystkich",
@@ -299,6 +332,8 @@ const pl = {
       title: "Mecze i typy meczowe",
       intro:
         "Wszystkie mecze turnieju z wynikami na żywo. Typuj wynik w setach każdego meczu — typ możesz zmieniać aż do pierwszej piłki tego meczu.",
+      introLeague:
+        "Wszystkie mecze sezonu z wynikami. Typuj wynik w setach każdego meczu — mecz otwiera się do typowania, gdy liga ogłosi godzinę jego rozpoczęcia, a typ możesz zmieniać aż do pierwszej piłki tego meczu.",
       allGames: "Terminarz",
       yourPick: "Twój typ",
       result: "Wynik",
@@ -428,6 +463,11 @@ const pl = {
     common: {
       noTournament: "Nie skonfigurowano jeszcze turnieju.",
       language: "Język",
+      timeLeft: "pozostało {time}",
+      unitDay: "dzień",
+      unitDays: "dni",
+      unitHours: "godz.",
+      unitMinutes: "min",
     },
 };
 
@@ -440,6 +480,7 @@ const en: Dict = {
 
     nav: {
       predictions: "Predict tournament",
+      predictionsLeague: "Predict the season",
       leaderboard: "Typer ranking",
       matches: "Predict matches",
       rules: "Rules",
@@ -468,6 +509,8 @@ const en: Dict = {
       rulesHint:
         "Every correct answer earns the points shown on the question. The teams part is for everyone. The extra questions are optional: if you answer none of them you are only ranked in the teams ranking.",
       deadline: "Answers are accepted until: {deadline}.",
+      deadlineBanner:
+        "You can change your Jasnowidz answers until the first ball of the season: {deadline} ({left}). After that they are closed.",
       teamsSection: "Questions about the teams",
       extendedSection: "Extra questions (optional)",
       points: "{n} pts",
@@ -583,6 +626,11 @@ const en: Dict = {
       saved: "Saved!",
       saveError: "Could not save.",
       unsaved: "You have unsaved changes.",
+      lockedTitleLeague: "Season predictions are closed.",
+      lockedBodyLeague:
+        "The season has started, so your prediction is locked to whatever you saved before the first ball. You can still move the table and playoffs around for fun — nothing will be saved. Match predictions carry on as normal all season.",
+      deadlineBanner:
+        "You can change your season prediction (table and playoffs) until the first ball of the season: {deadline} ({left}). After that it is closed. Match predictions close separately, at the first ball of each match.",
       lockedTitle: "Tournament predictions are closed.",
       lockedBody:
         "The tournament has started, so your prediction is locked to whatever you saved before the first ball. You can still move the bracket around for fun — nothing will be saved. Match predictions carry on as normal all tournament.",
@@ -606,6 +654,11 @@ const en: Dict = {
       privateGroupsLink: "Your private groups",
       privateGroupsTail: "have their own leaderboards.",
       noResults: "No results yet — the leaderboard fills in once the tournament starts (9 Sep 2026).",
+      noResultsLeague: "No results yet — the leaderboard fills in once the season starts ({date}).",
+      groupsColLeague: "Table",
+      bracketColLeague: "Playoffs",
+      rulesLeague:
+        "Season table: each team scores 14 points minus 1 for every place it finishes away from your prediction. Playoffs: a correct match winner scores 4 for a quarterfinal, 8 for a semifinal and the 3rd-place match, 4 for the 5th-place match and 16 for the final; a correct pairing earns half of that.",
       rank: "#",
       player: "Player",
       groupsCol: "Groups",
@@ -709,9 +762,29 @@ const en: Dict = {
       groupStatsTeam: "Team",
       groupStatsPos: "Pos.",
       groupStatsNoData: "No group stage data yet.",
+      groupStatsTitleLeague: "Position stats",
+      groupStatsIntroLeague:
+        "Distribution of predicted table positions for each team. The highlighted column is the final position after 26 rounds.",
+      legendEuro: [
+        "10 pts — exact position",
+        "6 pts — 1 place off",
+        "2 pts — 2 places off",
+        "0 pts — 3 places off",
+        "−2 pts or worse — 4+ places off",
+      ],
+      legendLeague: [
+        "14 pts — exact position",
+        "13 pts — 1 place off",
+        "12–11 pts — 2–3 places off",
+        "10–8 pts — 4–6 places off",
+        "7 pts or fewer — 7+ places off",
+      ],
       bracketStatsTitle: "Knockout stage stats",
       bracketStatsIntro: "Distribution of predicted pairings and winners for each knockout match.",
       bracketStatsNoData: "No knockout bracket predictions yet.",
+      bracketStatsTitleLeague: "Playoff stats",
+      bracketStatsIntroLeague: "Distribution of predicted pairings and winners for each playoff match.",
+      bracketStatsNoDataLeague: "No playoff predictions yet.",
       bracketStatsPairPts: "Pair",
       bracketStatsWinnerPts: "Winner",
       bracketStatsAvgAll: "Field avg",
@@ -724,6 +797,8 @@ const en: Dict = {
       title: "Fixtures & match predictions",
       intro:
         "Every match in the tournament with live results. Predict the set score of each one — you can change a pick right up until that match's first ball.",
+      introLeague:
+        "Every match of the season with results. Predict the set score of each one — a match opens for predictions once the league announces its kick-off time, and you can change a pick right up until that match's first ball.",
       allGames: "Schedule",
       yourPick: "Your pick",
       result: "Result",
@@ -853,6 +928,11 @@ const en: Dict = {
     common: {
       noTournament: "No tournament configured yet.",
       language: "Language",
+      timeLeft: "{time} left",
+      unitDay: "day",
+      unitDays: "days",
+      unitHours: "h",
+      unitMinutes: "min",
     },
 };
 

@@ -119,7 +119,7 @@ export default async function MatchesPage({ params }: { params: Promise<{ slug: 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold">{dict.matches.title}</h1>
-      <p className="mb-2 text-sm text-gray-500">{dict.matches.intro}</p>
+      <p className="mb-2 text-sm text-gray-500">{tournament.type === "league" ? dict.matches.introLeague : dict.matches.intro}</p>
       <p className="mb-8 text-sm">
         <Link href={`/t/${slug}/rules`} className="text-blue-600 underline">
           {dict.leaderboard.rulesLink}

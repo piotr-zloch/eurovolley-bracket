@@ -4,6 +4,7 @@ import { getOptionalUser } from "@/lib/require-user";
 import { fmt } from "@/lib/i18n";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import TournamentPrediction from "./TournamentPrediction";
+import DeadlineBanner from "@/components/DeadlineBanner";
 
 type Team = { id: number; name: string };
 
@@ -80,6 +81,14 @@ export default async function PredictionsPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {tournament.type === "league" && !isLocked && (
+        <DeadlineBanner
+          template={dict.predictions.deadlineBanner}
+          deadlineIso={tournament.prediction_deadline}
+          locale={locale}
+          dict={dict}
+        />
+      )}
       <h1 className="mb-2 text-2xl font-bold">{dict.predictions.title}</h1>
       <p className="mb-8 text-sm text-gray-500">
         {tournament.type === "league" ? dict.predictions.leagueIntro : dict.predictions.intro}
@@ -103,8 +112,10 @@ export default async function PredictionsPage({ params }: { params: Promise<{ sl
 
       {isLocked && (
         <p className="mb-6 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          <span className="font-medium">{dict.predictions.lockedTitle}</span>{" "}
-          {dict.predictions.lockedBody}
+          <span className="font-medium">
+            {tournament.type === "league" ? dict.predictions.lockedTitleLeague : dict.predictions.lockedTitle}
+          </span>{" "}
+          {tournament.type === "league" ? dict.predictions.lockedBodyLeague : dict.predictions.lockedBody}
         </p>
       )}
 

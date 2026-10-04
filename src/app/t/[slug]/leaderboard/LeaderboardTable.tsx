@@ -23,10 +23,13 @@ export default function LeaderboardTable({
   rows: initialRows,
   currentUserId,
   dict,
+  league = false,
 }: {
   rows: Row[];
   currentUserId: string;
   dict: Dict;
+  /** A league has one table and a playoff bracket, not groups and a knockout bracket. */
+  league?: boolean;
 }) {
   const t = dict.leaderboard;
   const [sortKey, setSortKey] = useState<SortKey>("points");
@@ -81,8 +84,8 @@ export default function LeaderboardTable({
           <tr className="border-b text-left text-gray-500">
             <th className="py-2 pr-2">#</th>
             <Th col="name">{t.player}</Th>
-            <Th col="groupPoints" className="text-right">{t.groupsCol}</Th>
-            <Th col="bracketPoints" className="text-right">{t.bracketCol}</Th>
+            <Th col="groupPoints" className="text-right">{league ? t.groupsColLeague : t.groupsCol}</Th>
+            <Th col="bracketPoints" className="text-right">{league ? t.bracketColLeague : t.bracketCol}</Th>
             <Th col="matchPoints" className="text-right">{t.matchesCol}</Th>
             <Th col="points" className="text-right font-semibold">{t.total}</Th>
           </tr>
