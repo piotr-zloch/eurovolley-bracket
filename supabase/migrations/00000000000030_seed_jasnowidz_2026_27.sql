@@ -227,34 +227,30 @@ begin
       (12, 'teams', 'team', 'Która drużyna zajmie najwyższą pozycję na koniec sezonu 2026/27?', '{"teams": [56, 93]}'::jsonb, 1),
       (13, 'teams', 'team', 'Która drużyna zajmie wyższą pozycję na koniec sezonu 2026/27?', '{"teams": [8, 71, 18]}'::jsonb, 2),
       (14, 'teams', 'choice', 'Ilu trenerów zostanie zwolnionych w trakcie sezonu 2026/27?', '[{"key": "0", "label": "0"}, {"key": "1", "label": "1"}, {"key": "2", "label": "2"}, {"key": "3", "label": "3"}, {"key": "4", "label": "4"}, {"key": "5+", "label": "5 lub więcej"}]'::jsonb, 2),
-      (15, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej punktów w fazie zasadniczej Tauronligi 2026/27?', null, 4),
-      (16, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej bloków punktowych w fazie zasadniczej Tauronligi 2026/27?', null, 4),
-      (17, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej asów serwisowych w fazie zasadniczej Tauronligi 2026/27?', null, 4),
-      (18, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej statuetek MVP w fazie zasadniczej Tauronligi 2026/27?', null, 4),
-      (19, 'extended', 'player', 'Który atakujący będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 200 ataków)', '{"position": "Atakujący"}'::jsonb, 3),
-      (20, 'extended', 'player', 'Który przyjmujący będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 200 ataków)', '{"position": "Przyjmujący"}'::jsonb, 3),
-      (21, 'extended', 'player', 'Który środkowy będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 100 ataków)', '{"position": "Środkowy"}'::jsonb, 3),
-      (22, 'extended', 'player', 'Który zawodnik będzie miał najwyższy % przyjęcia pozytywnego w fazie zasadniczej Tauronligi 2026/27? (powyżej 100 przyjęć)', null, 4),
-      (23, 'extended', 'boolean', 'Czy GKS Katowice wygra więcej niż 5 spotkań w Tauronlidze?', null, 1),
-      (24, 'extended', 'choice', 'Który zawodnik zdobędzie więcej punktów dla Częstochowy w Tauronlidze 2026/27?', '[{"key": "kukartsev", "label": "Pablo Kukartsev"}, {"key": "kyed_jensen", "label": "Mads Kyed Jensen"}]'::jsonb, 1),
+      (15, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej punktów w fazie zasadniczej Tauronligi 2026/27?', null, 5),
+      (16, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej bloków punktowych w fazie zasadniczej Tauronligi 2026/27?', null, 5),
+      (17, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej asów serwisowych w fazie zasadniczej Tauronligi 2026/27?', null, 5),
+      (18, 'extended', 'player', 'Który zawodnik zdobędzie najwięcej statuetek MVP w fazie zasadniczej Tauronligi 2026/27?', null, 5),
+      (19, 'extended', 'player', 'Który atakujący będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 200 ataków)', '{"position": "Atakujący"}'::jsonb, 5),
+      (20, 'extended', 'player', 'Który przyjmujący będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 200 ataków)', '{"position": "Przyjmujący"}'::jsonb, 5),
+      (21, 'extended', 'player', 'Który środkowy będzie miał najwyższą efektywność ataku w fazie zasadniczej Tauronligi 2026/27? (powyżej 100 ataków)', '{"position": "Środkowy"}'::jsonb, 5),
+      (22, 'extended', 'player', 'Który zawodnik będzie miał najwyższy % przyjęcia pozytywnego w fazie zasadniczej Tauronligi 2026/27? (powyżej 100 przyjęć)', null, 5),
+      (23, 'extended', 'boolean', 'Czy klub GKS Katowice wygra więcej niż 5 spotkań w Tauronlidze?', null, 1),
+      (24, 'extended', 'choice', 'Który zawodnik zdobędzie więcej punktów dla klubu Steam Hemarpol Politechnika Częstochowa w Tauronlidze 2026/27?', '[{"key": "kukartsev", "label": "Pablo Kukartsev"}, {"key": "kyed_jensen", "label": "Mads Kyed Jensen"}]'::jsonb, 1),
       (25, 'extended', 'boolean', 'Czy Maciej Muzaj osiągnie 48% skuteczności w ataku w Tauronlidze 2026/27?', null, 1),
       (26, 'extended', 'boolean', 'Czy Dawid Dulski osiągnie 48% skuteczności w ataku w Tauronlidze 2026/27?', null, 1),
-      (27, 'extended', 'boolean', 'Czy średnia frekwencja na meczach Jastrzębia Barkomu przekroczy 1500 osób?', null, 1),
-      (28, 'extended', 'player', 'Który środkowy zdobędzie najwięcej punktów dla Ślepska w Tauronlidze 2026/27?', '{"players": [1306, 864, 1964]}'::jsonb, 2),
-      (29, 'extended', 'boolean', 'Czy Trefl uzyska 40% pozytywnego przyjęcia wg statystyk ze strony Plusligi?', null, 1),
-      (30, 'extended', 'player', 'Który zawodnik zdobędzie więcej punktów dla Zaksy w Tauronlidze 2026/27?', '{"players": [1614, 2093]}'::jsonb, 1),
+      (27, 'extended', 'boolean', 'Czy średnia frekwencja na meczach klubu Jastrzębie Barkom przekroczy 1500 osób?', null, 1),
+      (28, 'extended', 'player', 'Który środkowy zdobędzie najwięcej punktów dla klubu Ślepsk Malow Suwałki w Tauronlidze 2026/27?', '{"players": [1306, 864, 1964]}'::jsonb, 2),
+      (29, 'extended', 'boolean', 'Czy klub Energa Trefl Gdańsk uzyska 40% pozytywnego przyjęcia wg statystyk ze strony Plusligi?', null, 1),
+      (30, 'extended', 'player', 'Który zawodnik zdobędzie więcej punktów dla klubu ZAKSA Kędzierzyn-Koźle w Tauronlidze 2026/27?', '{"players": [1614, 2093]}'::jsonb, 1),
       (31, 'extended', 'boolean', 'Czy Moritz Karlitzek zagra w wyjściowym składzie przynajmniej w 20 z 26 meczów fazy zasadniczej?', null, 1),
       (32, 'extended', 'boolean', 'Czy Alan Souza zagra w wyjściowym składzie przynajmniej w 20 z 26 meczów fazy zasadniczej?', null, 1),
       (33, 'extended', 'boolean', 'Czy Łukasz Kaczmarek przekroczy 45% skuteczności w ataku w Tauronlidze 2026/27?', null, 1),
       (34, 'extended', 'player', 'Który zawodnik zagra więcej setów w podstawowym składzie w Tauronlidze 2026/27?', '{"players": [87, 293]}'::jsonb, 1),
       (35, 'extended', 'boolean', 'Czy Ran Takahashi osiągnie 36% efektywności w ataku w Tauronlidze 2026/27?', null, 1),
-      (36, 'extended', 'player', 'Który zawodnik zdobędzie więcej punktów dla Zawiercia w Tauronlidze 2026/27?', '{"players": [270, 2841]}'::jsonb, 1)
+      (36, 'extended', 'player', 'Który zawodnik zdobędzie więcej punktów dla klubu Aluron CMC Warta Zawiercie w Tauronlidze 2026/27?', '{"players": [270, 2841]}'::jsonb, 1)
     ) as v(position, section, kind, prompt_pl, options, points);
   end if;
 
-  -- The club's everyday name, as the question list uses it; the league's official name stays as
-  -- the English name.
-  update teams set name_pl = 'Norwid Częstochowa'
-   where tournament_id = t_id and source_id = 71 and name_pl is distinct from 'Norwid Częstochowa';
 end
 $seed$;
