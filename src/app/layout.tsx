@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Typer",
+  title: "Typer Szóstego Seta",
   description:
     "Typer siatkarski: typuj tabelę, drabinkę i wyniki meczów. / Volleyball predictions: league tables, brackets and match scores.",
 };

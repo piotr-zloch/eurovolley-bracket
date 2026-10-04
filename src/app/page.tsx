@@ -98,6 +98,24 @@ export default async function Home() {
           <h3 className="font-medium">{copy.whatB}</h3>
           <p className="mt-1 text-sm text-gray-600">{whatBDesc}</p>
         </div>
+        {isLeague && (
+          <div className="rounded border p-4 sm:col-span-2">
+            <div className="flex flex-wrap items-center gap-3">
+              <h3 className="font-medium">{copy.whatC}</h3>
+              {!live.jasnowidz_enabled && (
+                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{copy.whatCSoon}</span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-gray-600">{copy.whatCDesc}</p>
+            {live.jasnowidz_enabled && (
+              <p className="mt-2 text-sm">
+                <Link href={`${base}/jasnowidz`} className="text-blue-600 underline">
+                  {copy.whatCCta}
+                </Link>
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-6 rounded border border-yellow-300 bg-yellow-50 p-4">
