@@ -147,6 +147,19 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
     timeZone: "Europe/Warsaw",
   }).format(new Date(tournament.prediction_deadline));
 
+  // Nothing at all before typing closes: no table, no distributions, not even the player's own
+  // picks. Returning here also means none of the statistics are loaded or sent.
+  if (!showAggregates) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <h1 className="mb-4 text-2xl font-bold">{dict.nav.stats}</h1>
+        <p className="rounded border bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          {fmt(t.statsClosedNote, { deadline: deadlineText })}
+        </p>
+      </div>
+    );
+  }
+
   const teamName = (tm: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && tm?.name_pl) || tm?.name || "?";
   const one = <T,>(v: T | T[] | null): T | null => (Array.isArray(v) ? (v[0] ?? null) : v);

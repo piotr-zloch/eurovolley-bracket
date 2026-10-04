@@ -309,6 +309,8 @@ const pl = {
       sortName: "Alfabetycznie",
       sortAvg: "Średnia graczy",
       sortFinal: "Pozycja końcowa",
+      statsClosedNote:
+        "Statystyki pojawią się po zamknięciu typowania — {deadline}. Do tego czasu nie pokazujemy żadnych statystyk, żeby nikt nie typował na podstawie cudzych typów.",
       groupStatsAvgPos: "Śr. typ",
       groupStatsAvgPosHint: "Średnia pozycja typowana przez wszystkich graczy",
       legendEuro: [
@@ -785,6 +787,8 @@ const en: Dict = {
       sortName: "Alphabetical",
       sortAvg: "Players’ average",
       sortFinal: "Final position",
+      statsClosedNote:
+        "Statistics will appear once typing is closed — {deadline}. Until then we show no statistics at all, so nobody predicts off someone else’s picks.",
       groupStatsAvgPos: "Avg. pick",
       groupStatsAvgPosHint: "Average position predicted by all players",
       legendEuro: [
