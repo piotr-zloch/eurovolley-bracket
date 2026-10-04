@@ -3,12 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { parseSchedule } from "@/lib/tauronliga-schedule";
 
-// Daily schedule sync, called by Vercel Cron (see vercel.json).
+// League sync, called by Vercel Cron (see vercel.json).
 //
-// Fetches the league's published schedule and hands it to sync_league_schedule() in the database,
-// which decides what may change (see migration 27). This route holds no database privileges of its
-// own: it uses the public anon key plus CRON_SECRET, whose hash is the only thing the function
-// accepts. Vercel sends CRON_SECRET as a Bearer token on cron invocations.
+// Fetches the league's published schedule page once and hands it to two database functions, which
+// decide what may change: sync_league_schedule() for kick-off times (migration 27) and
+// sync_league_results() for finished games' scores (migration 28, recomputes the leaderboard).
+// This route holds no database privileges of its own: it uses the public anon key plus CRON_SECRET,
+// whose hash is the only thing those functions accept. Vercel sends CRON_SECRET as a Bearer token on cron invocations.
 //
 // Run it by hand with:  curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/sync-schedule
 
@@ -49,12 +50,26 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-  const { data, error } = await supabase.rpc("sync_league_schedule", {
+
+  // Independent calls: a problem with one (say, results) must not stop the other from applying.
+  const schedule = await supabase.rpc("sync_league_schedule", {
     p_secret: secret,
     p_slug: slug,
     p_games: games.map(({ id, date, time }) => ({ id, date, time })),
   });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const results = await supabase.rpc("sync_league_results", {
+    p_secret: secret,
+    p_slug: slug,
+    p_games: games.map(({ id, homeSets, awaySets }) => ({ id, home_sets: homeSets, away_sets: awaySets })),
+  });
 
-  return NextResponse.json({ parsed: games.length, ...data });
+  const errors = [
+    schedule.error && `schedule: ${schedule.error.message}`,
+    results.error && `results: ${results.error.message}`,
+  ].filter(Boolean);
+
+  return NextResponse.json(
+    { parsed: games.length, schedule: schedule.data ?? null, results: results.data ?? null, errors },
+    { status: errors.length > 0 ? 500 : 200 }
+  );
 }

@@ -68,7 +68,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
   const { data: matches } = await supabase
     .from("matches")
     .select(
-      "id, stage, group_id, bracket_slot, round, scheduled_date, scheduled_at, home_sets, away_sets, home_team_id, away_team_id, winner_team_id, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
+      "id, stage, group_id, bracket_slot, round, scheduled_date, scheduled_at, result_source, home_sets, away_sets, home_team_id, away_team_id, winner_team_id, home:home_team_id(name, name_pl), away:away_team_id(name, name_pl)"
     )
     .eq("tournament_id", tournament.id)
     .order("scheduled_at", { ascending: true });
@@ -202,6 +202,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
         : null,
     homeSets: m.home_sets as number | null,
     awaySets: m.away_sets as number | null,
+    source: (m.result_source as "admin" | "sync" | null) ?? null,
   }));
 
   const knockoutOrder = ["round_of_16", "quarterfinal", "semifinal", "fifth_place", "bronze", "final"];
@@ -256,6 +257,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
                 kickoff={m.kickoff}
                 currentHomeSets={m.homeSets}
                 currentAwaySets={m.awaySets}
+                source={m.source}
                 dict={dict}
               />
             ))}
@@ -282,6 +284,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
                   kickoff={m.kickoff}
                   currentHomeSets={m.homeSets}
                   currentAwaySets={m.awaySets}
+                source={m.source}
                   dict={dict}
                 />
               ))}
@@ -309,6 +312,7 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
                   kickoff={m.kickoff}
                   currentHomeSets={m.homeSets}
                   currentAwaySets={m.awaySets}
+                source={m.source}
                   dict={dict}
                 />
               ))}

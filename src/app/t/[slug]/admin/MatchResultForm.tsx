@@ -18,6 +18,7 @@ export default function MatchResultForm({
   kickoff,
   currentHomeSets,
   currentAwaySets,
+  source,
   dict,
 }: {
   matchId: number;
@@ -27,6 +28,8 @@ export default function MatchResultForm({
   kickoff: string | null;
   currentHomeSets: number | null;
   currentAwaySets: number | null;
+  /** Where the stored result came from: the league's feed, an admin, or nothing yet. */
+  source: "admin" | "sync" | null;
   dict: Dict;
 }) {
   const stored =
@@ -79,6 +82,11 @@ export default function MatchResultForm({
       {status === "saved" && <span className="text-xs text-green-600">✓</span>}
       {status === "error" && <span className="text-xs text-red-600">✗</span>}
       {status === "idle" && played && <span className="w-3 text-xs text-gray-300">•</span>}
+      {played && source && (
+        <span className="text-xs text-gray-400">
+          {source === "sync" ? dict.admin.resultAuto : dict.admin.resultManual}
+        </span>
+      )}
     </li>
   );
 }

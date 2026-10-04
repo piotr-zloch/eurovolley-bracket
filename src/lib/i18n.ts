@@ -190,7 +190,9 @@ const pl = {
       recomputeError: "Błąd — sprawdź, czy masz uprawnienia administratora.",
       matchResults: "Wyniki meczów",
       matchResultsIntro:
-        "Wynik w setach każdego rozegranego meczu. Na tej podstawie liczone są punkty w konkursie typowania meczów, a zwycięzca meczu ustala się automatycznie.",
+        "Wynik w setach każdego rozegranego meczu. Na tej podstawie liczone są punkty w konkursie typowania meczów, a zwycięzca meczu ustala się automatycznie. W lidze wyniki pobierają się same z oficjalnej strony; wynik wpisany tutaj ręcznie zawsze ma pierwszeństwo, a wyczyszczenie go oddaje mecz z powrotem automatowi.",
+      resultAuto: "z ligi",
+      resultManual: "ręcznie",
       knockoutMatchResults: "Faza pucharowa",
       noResult: "— brak —",
       groupFinal: "Faza grupowa — końcowa kolejność",
@@ -533,7 +535,9 @@ const en: Dict = {
       recomputeError: "Failed — check you have admin access.",
       matchResults: "Match results",
       matchResultsIntro:
-        "The set score of every match played. Match-prediction points are scored from this, and the match winner is derived from it automatically.",
+        "The set score of every match played. Match-prediction points are scored from this, and the match winner is derived from it automatically. In a league, results are pulled automatically from the official site; a result entered here by hand always takes precedence, and clearing it hands the match back to the automatic sync.",
+      resultAuto: "from the league",
+      resultManual: "manual",
       knockoutMatchResults: "Knockout stage",
       noResult: "— none —",
       groupFinal: "Group stage — final standings",

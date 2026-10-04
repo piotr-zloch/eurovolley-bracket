@@ -201,21 +201,31 @@ Emails are **never** displayed anywhere in the app — players are identified on
   known limitations (the real match-score text format hasn't been observed yet — it fails safe by
   skipping and logging anything it can't parse, rather than guessing).
 
-## League schedule sync (PlusLiga)
+## League sync (PlusLiga): schedule and results
 
 League fixtures are seeded with the dates the league has announced so far (migration 26). Most
 games have only a *preliminary date*, and a game is closed for picks until it has a kick-off time.
-A daily job keeps the database in step with the league's published schedule:
+A daily job keeps the database in step with the league's published schedule, and records the
+results of finished games so the match-prediction competition scores itself:
 
 - `vercel.json` runs `GET /api/cron/sync-schedule` every day at 05:00 UTC.
 - The route (`src/app/api/cron/sync-schedule/route.ts`) fetches `tauronliga.pl/games.html`, parses
   it (`src/lib/tauronliga-schedule.ts`) and calls `sync_league_schedule()` (migration 27).
-- The function decides what may change: it sets and corrects kick-off times, but never touches a
-  game that has a result or has already started, never removes a time it already holds, and
-  refuses a feed with far fewer games than the database (a changed or half-loaded page).
+- `sync_league_schedule()` decides what may change in the schedule: it sets and corrects kick-off
+  times, but never touches a game that has a result or has already started, never removes a time
+  it already holds, and refuses a feed with far fewer games than the database (a changed or
+  half-loaded page).
+- `sync_league_results()` (migration 28) records the set score of finished games and then
+  recomputes the leaderboard. "Finished" is decided from the score alone: one side has 3 sets and
+  the other 0-2, so a match still in progress (1:0, 2:1) is never recorded. It ignores impossible
+  scores, and refuses a feed that would rewrite more than 5 results it already holds.
+- **Admin entry always wins.** A result entered in the admin panel is marked `admin` and the sync
+  never overwrites it. A synced result (`sync`) can be corrected by a later sync, which is how the
+  league fixes its own mistakes. Clearing a result in the admin panel hands the match back to the
+  sync. The admin panel shows each result's source ("z ligi" / "ręcznie").
 - The route has no database privileges of its own. It authenticates with `CRON_SECRET`, and the
-  database only stores that secret's SHA-256 hash (`sync_secrets`), so a leaked secret can do this
-  one thing and nothing else. Results are not synced; enter them in the admin panel.
+  database only stores that secret's SHA-256 hash (`sync_secrets`), so a leaked secret can do these
+  two things and nothing else. Playoff games are not synced yet: enter those in the admin panel.
 
 **One-time setup**
 
@@ -229,9 +239,16 @@ A daily job keeps the database in step with the league's published schedule:
 **Run it by hand / check it**
 
 `curl -H "Authorization: Bearer <the secret>" https://<your-domain>/api/cron/sync-schedule` returns
-JSON such as `{"parsed":182,"time_set":7,"rescheduled":0,"unchanged":175,...,"changes":[...]}`.
-A non-200 status means nothing was applied; see the Vercel function logs for the reason.
-`supabase/tests/schedule_sync.sql` tests the database rules on a scratch database.
+JSON such as `{"parsed":182,"schedule":{"time_set":7,...},"results":{"results_added":3,...},"errors":[]}`.
+A non-200 status means something failed; the two parts are independent, so `errors` says which.
+`supabase/tests/schedule_sync.sql` and `supabase/tests/results_sync.sql` test the database rules
+on a scratch database (each rolls itself back).
+
+**How often it runs.** `vercel.json` runs it once a day, which is the most the free Vercel plan
+allows, so results appear in the leaderboard the next morning. For fresher results during
+match days, call the same URL more often from any scheduler, for example a GitHub Actions
+workflow with `schedule: - cron: "*/30 * * * *"` that runs
+`curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" https://<your-domain>/api/cron/sync-schedule`.
 
 ## Not yet built (next steps)
 
