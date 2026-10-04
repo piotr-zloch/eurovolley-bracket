@@ -357,18 +357,25 @@ export default function TournamentPrediction({
     }));
   }
 
+  /**
+   * Stash first, then send them to sign up or log in — the draft is what they come back to.
+   * pendingSave marks it as explicitly submitted, so it is written through after they sign in.
+   */
+  function stashAndGo(path: string) {
+    writeDraft({
+      tournamentId,
+      orders: Object.fromEntries(currentOrderIds().map((o) => [o.groupId, o.teamIds])),
+      picks: validPicks,
+      pendingSave: true,
+    });
+    router.push(path);
+  }
+
   async function handleSave() {
     if (isLocked) return;
 
     if (!isLoggedIn) {
-      // Stash first, then send them to sign up — the draft is what they come back to.
-      writeDraft({
-        tournamentId,
-        orders: Object.fromEntries(currentOrderIds().map((o) => [o.groupId, o.teamIds])),
-        picks: validPicks,
-        pendingSave: true,
-      });
-      router.push("/signup?from=predictions");
+      stashAndGo("/signup?from=predictions");
       return;
     }
 
@@ -512,6 +519,16 @@ export default function TournamentPrediction({
             disabled={status === "saving"}
           >
             {status === "saving" ? t.saving : isLoggedIn ? t.save : t.saveSignUp}
+          </button>
+        )}
+        {/* Someone who already has an account needs a way in that isn't "sign up". */}
+        {!isLocked && !isLoggedIn && (
+          <button
+            type="button"
+            onClick={() => stashAndGo("/login?from=predictions")}
+            className="rounded border px-5 py-2.5 font-medium text-gray-700 hover:bg-gray-50"
+          >
+            {t.saveLogIn}
           </button>
         )}
         {status === "saved" && <span className="text-sm text-green-600">{t.saved}</span>}
