@@ -15,13 +15,14 @@ const pl = {
 
     nav: {
       predictions: "Typuj turniej",
-      leaderboard: "Ranking",
+      leaderboard: "Ranking Typer",
       matches: "Typuj mecze",
       rules: "Zasady",
       groups: "Profil",
       admin: "Admin",
       stats: "Statystyki",
       jasnowidz: "Jasnowidz",
+      jasnowidzRanking: "Ranking Jasnowidz",
       signOut: "Wyloguj",
     },
 
@@ -34,7 +35,7 @@ const pl = {
     },
 
     jasnowidz: {
-      title: "Jasnowidz Plusligi",
+      title: "Jasnowidz TAURON Ligi",
       intro:
         "Typuj, jak potoczy się sezon: medale, statystyki drużyn i zawodników, występy konkretnych graczy. Odpowiedzi możesz zmieniać aż do pierwszej piłki sezonu.",
       rulesHint:
@@ -406,7 +407,7 @@ const pl = {
       noActive: "Obecnie nie trwa żadna rywalizacja.",
       archiveCta: "Zobacz archiwum: {name}",
       league: {
-        tagline: "Typer siatkarskiej PlusLigi",
+        tagline: "Typer siatkarskiej TAURON Ligi",
         lead: "Ustaw przewidywaną tabelę sezonu, a drabinka play-offów ułoży się sama. Typuj też wyniki poszczególnych meczów. Rywalizuj ze znajomymi w prywatnej grupie albo w rankingu ogólnym.",
         whatA: "Typ sezonu",
         whatADesc: "Jeden typ na cały sezon: końcowa tabela fazy zasadniczej wszystkich 14 drużyn i cała drabinka play-offów aż do finału.",
@@ -429,13 +430,14 @@ const en: Dict = {
 
     nav: {
       predictions: "Predict tournament",
-      leaderboard: "Leaderboard",
+      leaderboard: "Typer ranking",
       matches: "Predict matches",
       rules: "Rules",
       groups: "Profile",
       admin: "Admin",
       stats: "Stats",
       jasnowidz: "Jasnowidz",
+      jasnowidzRanking: "Jasnowidz ranking",
       signOut: "Sign out",
     },
 
@@ -448,7 +450,7 @@ const en: Dict = {
     },
 
     jasnowidz: {
-      title: "Jasnowidz Plusligi",
+      title: "Jasnowidz TAURON Liga",
       intro:
         "Predict how the season will turn out: medals, team and player statistics, how specific players will do. You can change your answers until the first ball of the season.",
       rulesHint:
@@ -820,7 +822,7 @@ const en: Dict = {
       noActive: "No competition is running right now.",
       archiveCta: "See the archive: {name}",
       league: {
-        tagline: "Predictions for the PlusLiga volleyball season",
+        tagline: "Predictions for the TAURON Liga volleyball season",
         lead: "Set your predicted season table and the playoff bracket builds itself. Predict individual match scores too. Compete with friends in a private group or on the global leaderboard.",
         whatA: "Season prediction",
         whatADesc: "One prediction for the whole season: the final regular-season table of all 14 teams and the full playoff bracket through to the final.",

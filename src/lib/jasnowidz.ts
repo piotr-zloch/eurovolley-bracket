@@ -18,7 +18,14 @@ export type Question = {
 };
 
 export type Team = { source_id: number; name: string };
-export type Player = { source_id: number; name: string; position: string | null; team_source_id: number | null };
+export type Player = {
+  source_id: number;
+  name: string;
+  /** "Surname Given": the order players are listed and searched in. Falls back to `name`. */
+  display_name: string | null;
+  position: string | null;
+  team_source_id: number | null;
+};
 
 export type Choice = { key: string; label: string; sub?: string };
 
@@ -60,12 +67,32 @@ export function choicesFor(
   return players
     .filter((p) => !opts?.players || opts.players.includes(p.source_id))
     .filter((p) => !opts?.position || p.position === opts.position)
-    .sort(byName)
     .map((p) => ({
       key: String(p.source_id),
-      label: p.name,
+      label: p.display_name ?? p.name,
       sub: [p.team_source_id != null ? teamName.get(p.team_source_id) : null, p.position].filter(Boolean).join(" · "),
-    }));
+    }))
+    // Surname first, so this is an alphabetical list by surname.
+    .sort((a, b) => a.label.localeCompare(b.label, "pl"));
+}
+
+/** Lower-cases and drops diacritics, so typing "wlodarczyk" finds "Włodarczyk". */
+export function fold(s: string): string {
+  return s.normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l").replace(/Ł/g, "l").toLowerCase();
+}
+
+/**
+ * The choices matching what was typed. Every word typed must appear somewhere in the name, club or
+ * position, in any order, so "jan kow" finds "Kowalski Jan" and "resovia atak" narrows to that
+ * club's attackers. An empty query matches everything.
+ */
+export function filterChoices(choices: Choice[], query: string): Choice[] {
+  const words = fold(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return choices;
+  return choices.filter((c) => {
+    const hay = fold(`${c.label} ${c.sub ?? ""}`);
+    return words.every((w) => hay.includes(w));
+  });
 }
 
 /** True only for an answer the question actually offers. */

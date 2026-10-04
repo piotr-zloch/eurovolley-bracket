@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { fmt, type Dict } from "@/lib/i18n";
-import type { Choice, QuestionKind } from "@/lib/jasnowidz";
+import { filterChoices, type Choice, type QuestionKind } from "@/lib/jasnowidz";
 import { saveJasnowidzAnswers } from "./actions";
 
 export type FormQuestion = {
@@ -20,11 +20,12 @@ export type FormQuestion = {
   earned: number | null;
 };
 
-/** Lower-cases and drops diacritics, so typing "wlodarczyk" finds "Włodarczyk". */
-function fold(s: string): string {
-  return s.normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l").replace(/Ł/g, "l").toLowerCase();
-}
-
+/**
+ * Pick one from a long list (players). Typing shows the matching entries straight away, as a list
+ * under the box, and clicking one selects it: there is no collapsed dropdown to open first.
+ * With an empty box the whole list is shown, alphabetical by surname. Also usable from the keyboard:
+ * arrows to move, Enter to pick, Escape to close.
+ */
 export function PlayerPicker({
   choices,
   value,
@@ -39,38 +40,100 @@ export function PlayerPicker({
   t: Dict["jasnowidz"];
 }) {
   const [query, setQuery] = useState("");
-  const needle = fold(query.trim());
-  const shown = needle ? choices.filter((c) => fold(`${c.label} ${c.sub ?? ""}`).includes(needle)) : choices;
-  // The current pick stays selectable even when the search filters it out.
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
   const selected = choices.find((c) => c.key === value);
-  const options = selected && !shown.some((c) => c.key === value) ? [selected, ...shown] : shown;
+  const shown = useMemo(() => filterChoices(choices, query), [choices, query]);
+
+  function pick(key: string) {
+    onChange(key);
+    setQuery("");
+    setOpen(false);
+  }
+
+  if (disabled) {
+    return (
+      <span className="text-sm">
+        {selected ? selected.label : "—"}
+        {selected?.sub && <span className="text-xs text-gray-400"> · {selected.sub}</span>}
+      </span>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-1">
-      {!disabled && (
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.searchPlayer}
-          className="rounded border px-2 py-1 text-sm"
-        />
+    <div className="relative">
+      {selected && (
+        <div className="mb-1.5 flex items-center gap-2 text-sm">
+          <span className="rounded bg-blue-50 px-2 py-1 font-medium">
+            {selected.label}
+            {selected.sub && <span className="text-xs font-normal text-gray-500"> · {selected.sub}</span>}
+          </span>
+          <button type="button" onClick={() => onChange("")} className="text-xs text-gray-400 underline" title="×">
+            ×
+          </button>
+        </div>
       )}
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className="rounded border px-2 py-1.5 text-sm disabled:bg-gray-50 disabled:text-gray-700"
-      >
-        <option value="">{t.choose}</option>
-        {options.map((c) => (
-          <option key={c.key} value={c.key}>
-            {c.label}
-            {c.sub ? ` — ${c.sub}` : ""}
-          </option>
-        ))}
-      </select>
-      {needle && shown.length === 0 && <span className="text-xs text-gray-500">{t.noMatch}</span>}
+      <input
+        type="search"
+        role="combobox"
+        aria-expanded={open}
+        aria-autocomplete="list"
+        value={query}
+        placeholder={t.searchPlayer}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+          setActive(0);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setOpen(true);
+            setActive((i) => Math.min(i + 1, shown.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setActive((i) => Math.max(i - 1, 0));
+          } else if (e.key === "Enter" && open && shown[active]) {
+            e.preventDefault();
+            pick(shown[active].key);
+          } else if (e.key === "Escape") {
+            setOpen(false);
+          }
+        }}
+        className="w-full rounded border px-2 py-1.5 text-sm"
+      />
+      {open && (
+        <ul
+          role="listbox"
+          className="absolute left-0 right-0 z-20 mt-1 max-h-64 overflow-y-auto rounded border bg-white text-sm shadow-lg"
+        >
+          {shown.length === 0 ? (
+            <li className="px-3 py-2 text-gray-500">{t.noMatch}</li>
+          ) : (
+            shown.map((c, i) => (
+              <li key={c.key} role="option" aria-selected={c.key === value}>
+                {/* onMouseDown, not onClick: the box loses focus (and the list closes) before a click lands. */}
+                <button
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    pick(c.key);
+                  }}
+                  onMouseEnter={() => setActive(i)}
+                  className={`flex w-full items-baseline justify-between gap-3 px-3 py-1.5 text-left ${
+                    i === active ? "bg-blue-50" : ""
+                  } ${c.key === value ? "font-medium" : ""}`}
+                >
+                  <span>{c.label}</span>
+                  <span className="shrink-0 text-xs text-gray-400">{c.sub}</span>
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </div>
   );
 }

@@ -30,6 +30,8 @@ export default async function TournamentLayout({
     : { data: null };
 
   const base = `/t/${tournament.slug}`;
+  // Jasnowidz exists only for leagues, and only once opened (admins can always preview it).
+  const showJasnowidz = tournament.type === "league" && (tournament.jasnowidz_enabled || !!adminRow);
   const link = "text-gray-600 hover:text-gray-900";
 
   return (
@@ -45,17 +47,22 @@ export default async function TournamentLayout({
             <Link href={`${base}/matches`} className={link}>
               {dict.nav.matches}
             </Link>
-            <Link href={`${base}/leaderboard`} className={link}>
-              {dict.nav.leaderboard}
-            </Link>
-            <Link href={`${base}/stats`} className={link}>
-              {dict.nav.stats}
-            </Link>
-            {tournament.type === "league" && (tournament.jasnowidz_enabled || adminRow) && (
+            {showJasnowidz && (
               <Link href={`${base}/jasnowidz`} className={link}>
                 {dict.nav.jasnowidz}
               </Link>
             )}
+            <Link href={`${base}/leaderboard`} className={link}>
+              {dict.nav.leaderboard}
+            </Link>
+            {showJasnowidz && (
+              <Link href={`${base}/jasnowidz/ranking`} className={link}>
+                {dict.nav.jasnowidzRanking}
+              </Link>
+            )}
+            <Link href={`${base}/stats`} className={link}>
+              {dict.nav.stats}
+            </Link>
             <Link href={`${base}/rules`} className={link}>
               {dict.nav.rules}
             </Link>
