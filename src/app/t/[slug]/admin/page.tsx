@@ -231,6 +231,14 @@ export default async function AdminPage({ params }: { params: Promise<{ slug: st
         >
           {t.predSummaryLink}
         </Link>
+        {isLeague && (
+          <Link
+            href={`/t/${slug}/admin/jasnowidz`}
+            className="inline-flex items-center rounded border px-3 py-2 text-sm hover:bg-gray-50"
+          >
+            {t.jasnowidz.link}
+          </Link>
+        )}
       </div>
 
       {/* Set scores come first: it's the entry made after every match, where the standings below

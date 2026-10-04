@@ -250,6 +250,28 @@ match days, call the same URL more often from any scheduler, for example a GitHu
 workflow with `schedule: - cron: "*/30 * * * *"` that runs
 `curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" https://<your-domain>/api/cron/sync-schedule`.
 
+## Jasnowidz (season question game)
+
+A league's season-long question game (who wins gold, who tops the attack stats, how specific
+players do), answered on the site and tied to the user's account. Pages: `/t/<slug>/jasnowidz`
+(the form), `/jasnowidz/ranking`, and `/t/<slug>/admin/jasnowidz` (open it, enter correct answers).
+
+- **Questions** live in `jasnowidz_questions` (migration 30 seeds the 2026/27 list from
+  `Scrappers/Tauronliga_season_setup/jasnowidz_questions_2026_27.json`). Kinds: `team`, `player`,
+  `choice`, `boolean`. A question can restrict its list (a few clubs, a few named players, one
+  position) or offer every club or player. Names not yet on the league's roster go in as `choice`.
+- **Two sections.** Everyone answers the `teams` section; the `extended` one is optional. Everyone
+  is in the teams ranking; only those who also answered an extended question are in the full one.
+- **Answers lock** at the tournament's `prediction_deadline` (the first ball). This is enforced
+  in the database (row-level security) as well as in the save action. Answers are private to their
+  owner; the ranking exposes only usernames and points.
+- **Resolving:** an admin lists the correct answer(s) per question, several for a tie. Points are
+  computed on every read, so there is nothing to recompute.
+- **Hidden until opened:** `tournaments.jasnowidz_enabled` is false by default, and admins can
+  always preview. Open it from the admin page.
+- **Roster refresh:** `python make_jasnowidz_seed.py --players-only --out roster.sql` after
+  re-running the scraper. It upserts players and never deletes them, so existing answers stay valid.
+
 ## Not yet built (next steps)
 
 - Password reset / email confirmation flows (Supabase handles the backend; UI pages aren't built yet).
