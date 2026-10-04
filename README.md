@@ -201,7 +201,7 @@ Emails are **never** displayed anywhere in the app — players are identified on
   known limitations (the real match-score text format hasn't been observed yet — it fails safe by
   skipping and logging anything it can't parse, rather than guessing).
 
-## League sync (Tauronliga): schedule and results
+## League sync (TAURON Liga): schedule and results
 
 League fixtures are seeded with the dates the league has announced so far (migration 26). Most
 games have only a *preliminary date*, and a game is closed for picks until it has a kick-off time.

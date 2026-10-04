@@ -1,4 +1,4 @@
-// Playoff bracket for a league (Tauronliga): derived from the predicted regular-season table.
+// Playoff bracket for a league (TAURON Liga): derived from the predicted regular-season table.
 //
 //   Quarterfinals   1-8, 2-7, 3-6, 4-5   (better seed is "home")
 //   Semifinals      W(1-8) v W(4-5), W(2-7) v W(3-6)
