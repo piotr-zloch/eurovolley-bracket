@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
 import { getLocale } from "@/lib/i18n-server";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
          * itself. Every page shared the bug; only this one had content wide enough to show it.
          */}
         <main className="w-full min-w-0 flex-1">{children}</main>
+        <SiteFooter />
         <Analytics />
       </body>
     </html>
