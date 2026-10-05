@@ -25,6 +25,8 @@ export default function TournamentNav({
   dict: Dict;
 }) {
   const base = `/t/${tournament.slug}`;
+  // Statistics show how everyone else predicted, so they open only once typing is closed.
+  const statsOpen = isArchived(tournament) || new Date(tournament.prediction_deadline).getTime() <= Date.now();
   const link = "text-gray-600 hover:text-gray-900";
   const showJasnowidz =
     loggedIn && tournament.type === "league" && (tournament.jasnowidz_enabled || isAdmin);
@@ -65,7 +67,7 @@ export default function TournamentNav({
             {dict.nav.jasnowidzRanking}
           </Link>
         )}
-        {loggedIn && (
+        {loggedIn && statsOpen && (
           <Link href={`${base}/stats`} className={link}>
             {dict.nav.stats}
           </Link>

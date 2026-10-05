@@ -1,10 +1,11 @@
-import { getTournamentBySlug } from "@/lib/tournament";
+import { getTournamentBySlug, isArchived } from "@/lib/tournament";
 import { requireUser } from "@/lib/require-user";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { fmt } from "@/lib/i18n";
 import { leagueSlotLabel } from "@/lib/league-bracket";
-import { averagePosition, compareByConsensus } from "@/lib/position-stats";
+import { averagePosition } from "@/lib/position-stats";
 import CollapsibleSection from "./CollapsibleSection";
+import LeaguePositionTable from "./LeaguePositionTable";
 
 const SCORES = ["3:0", "3:1", "3:2", "2:3", "1:3", "0:3"] as const;
 type Score = (typeof SCORES)[number];
@@ -136,6 +137,28 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
 
   const tournament = await getTournamentBySlug(supabase, slug);
   const isLeague = tournament.type === "league";
+  // Other players' picks stay hidden until typing is closed: seeing how everyone else ranked the
+  // teams (or the playoff pairings) would let people copy the crowd.
+  const showAggregates =
+    isArchived(tournament) || Date.now() >= new Date(tournament.prediction_deadline).getTime();
+  const deadlineText = new Intl.DateTimeFormat(locale === "pl" ? "pl-PL" : "en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/Warsaw",
+  }).format(new Date(tournament.prediction_deadline));
+
+  // Nothing at all before typing closes: no table, no distributions, not even the player's own
+  // picks. Returning here also means none of the statistics are loaded or sent.
+  if (!showAggregates) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10">
+        <h1 className="mb-4 text-2xl font-bold">{dict.nav.stats}</h1>
+        <p className="rounded border bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          {fmt(t.statsClosedNote, { deadline: deadlineText })}
+        </p>
+      </div>
+    );
+  }
 
   const teamName = (tm: { name: string; name_pl: string | null } | null) =>
     (locale === "pl" && tm?.name_pl) || tm?.name || "?";
@@ -302,24 +325,17 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         groupCode: g.code as string,
         teamName: teamName(team as { name: string; name_pl: string | null } | null),
         actualPosition,
-        avgPredicted: averagePosition(summary.counts),
-        counts: summary.counts,
-        total: summary.total,
-        avgPts: summary.avgPts,
+        // Left empty (not just hidden) before the deadline, so the numbers never reach the browser.
+        avgPredicted: showAggregates ? averagePosition(summary.counts) : null,
+        counts: showAggregates ? summary.counts : {},
+        total: showAggregates ? summary.total : 0,
+        avgPts: showAggregates ? summary.avgPts : null,
         myPick,
         myPts,
       };
     });
-    if (isLeague) {
-      // A league table is listed the way the players ranked it, best first; the final position
-      // does not exist until the season ends.
-      rows.sort((a, b) =>
-        compareByConsensus(
-          { avg: a.avgPredicted, actual: a.actualPosition, name: a.teamName },
-          { avg: b.avgPredicted, actual: b.actualPosition, name: b.teamName }
-        )
-      );
-    } else {
+    // The league table is sorted in the browser (LeaguePositionTable); Euro groups keep the final order.
+    if (!isLeague) {
       rows.sort((a, b) => {
         if (a.actualPosition === null && b.actualPosition === null) return a.teamName.localeCompare(b.teamName);
         if (a.actualPosition === null) return 1;
@@ -447,7 +463,12 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         title={isLeague ? t.groupStatsTitleLeague : t.groupStatsTitle}
         subtitle={isLeague ? t.groupStatsIntroLeague : t.groupStatsIntro}
       >
-        <div className="mb-4 flex flex-wrap gap-2 text-xs">
+        {isLeague && !showAggregates && (
+          <p className="mb-4 rounded border bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            {fmt(t.groupStatsHiddenNote, { deadline: deadlineText })}
+          </p>
+        )}
+        <div className={`mb-4 flex flex-wrap gap-2 text-xs ${isLeague && !showAggregates ? "hidden" : ""}`}>
           {legendItems.map(({ cell, chip, label }) => (
             <span key={chip} className="flex items-center gap-1.5">
               <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-medium ${cell}`}>
@@ -460,6 +481,13 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
 
         {groupCodes.length === 0 ? (
           <p className="text-gray-500">{t.groupStatsNoData}</p>
+        ) : isLeague ? (
+          <LeaguePositionTable
+            rows={groupMap.get(groupCodes[0])!}
+            positions={positions}
+            showAggregates={showAggregates}
+            dict={dict}
+          />
         ) : (
           <div className="flex flex-col gap-8">
             {groupCodes.map((code) => {
@@ -474,7 +502,6 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                       <colgroup>
                         <col className="w-44" />
                         <col className="w-10" />
-                        {isLeague && <col className="w-16" />}
                         <col className="w-20" />
                         <col className="w-16" />
                         <col className="w-14" />
@@ -486,11 +513,6 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                         <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
                           <th className="px-3 py-2 whitespace-nowrap">{t.groupStatsTeam}</th>
                           <th className="px-3 py-2 whitespace-nowrap text-center">{t.groupStatsPos}</th>
-                          {isLeague && (
-                            <th className="px-3 py-2 whitespace-nowrap text-center" title={t.groupStatsAvgPosHint}>
-                              {t.groupStatsAvgPos}
-                            </th>
-                          )}
                           <th className="px-3 py-2 whitespace-nowrap text-center border-l border-blue-200 bg-blue-50">
                             {t.predSummaryYourPick}
                           </th>
@@ -528,11 +550,6 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
                               <td className="px-3 py-2 text-center text-gray-500">
                                 {row.actualPosition ?? "—"}
                               </td>
-                              {isLeague && (
-                                <td className="px-3 py-2 text-center tabular-nums text-gray-500">
-                                  {row.avgPredicted !== null ? row.avgPredicted.toFixed(1) : "—"}
-                                </td>
-                              )}
                               <td className={`px-3 py-2 text-center whitespace-nowrap border-l border-blue-200 ${groupPosCellClass(row.myPts, isLeague)}`}>
                                 {row.myPick ?? "—"}
                               </td>
@@ -705,7 +722,11 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         title={isLeague ? t.bracketStatsTitleLeague : t.bracketStatsTitle}
         subtitle={isLeague ? t.bracketStatsIntroLeague : t.bracketStatsIntro}
       >
-        {slotsWithData.length === 0 ? (
+        {!showAggregates ? (
+          <p className="rounded border bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            {fmt(t.bracketStatsHiddenNote, { deadline: deadlineText })}
+          </p>
+        ) : slotsWithData.length === 0 ? (
           <p className="text-gray-500">{isLeague ? t.bracketStatsNoDataLeague : t.bracketStatsNoData}</p>
         ) : (
           <div className="flex flex-col gap-8">

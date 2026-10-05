@@ -39,3 +39,44 @@ export function compareByConsensus(a: ConsensusKey, b: ConsensusKey): number {
   }
   return a.name.localeCompare(b.name, "pl");
 }
+
+export type SortMode = "mine" | "name" | "avg" | "final";
+
+export type SortableRow = {
+  teamName: string;
+  /** The position this player predicted for the team, if any. */
+  myPick: number | null;
+  avgPredicted: number | null;
+  actualPosition: number | null;
+};
+
+const nullsLast = (x: number | null, y: number | null): number =>
+  x === y ? 0 : x === null ? 1 : y === null ? -1 : x - y;
+
+/**
+ * The rows in the chosen order; the input is not modified.
+ *   mine  - the player's own pick, 1 to N (teams they have not placed come last)
+ *   name  - alphabetical
+ *   avg   - the players' consensus, best-ranked first (only meaningful once typing is closed)
+ *   final - the real final position (only meaningful once the season is decided)
+ * Every order falls back to the name, so it is stable between loads.
+ */
+export function sortRows<T extends SortableRow>(rows: T[], mode: SortMode): T[] {
+  const byName = (a: T, b: T) => a.teamName.localeCompare(b.teamName, "pl");
+  const copy = [...rows];
+  switch (mode) {
+    case "name":
+      return copy.sort(byName);
+    case "mine":
+      return copy.sort((a, b) => nullsLast(a.myPick, b.myPick) || byName(a, b));
+    case "final":
+      return copy.sort((a, b) => nullsLast(a.actualPosition, b.actualPosition) || byName(a, b));
+    case "avg":
+      return copy.sort((a, b) =>
+        compareByConsensus(
+          { avg: a.avgPredicted, actual: a.actualPosition, name: a.teamName },
+          { avg: b.avgPredicted, actual: b.actualPosition, name: b.teamName }
+        )
+      );
+  }
+}
