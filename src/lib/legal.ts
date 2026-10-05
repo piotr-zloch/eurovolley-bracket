@@ -22,9 +22,7 @@ export const CONTEST = {
   season: "2026/27",
   /** The moment season predictions and Jasnowidz answers close (Polish time). */
   firstBall: "16 października 2026 r., godz. 17:30",
-  /**
-   * TO BE FILLED IN BY THE ORGANIZER before the rules are published: what is awarded for places 1-3
-   * in each ranking. Left visibly marked so it cannot go live unnoticed.
-   */
-  prizes: "[DO UZUPEŁNIENIA PRZEZ ORGANIZATORA: rodzaj nagród za miejsca 1, 2 i 3 w każdym z rankingów]",
+  /** What places 1-3 win, in each of the two rankings. */
+  prizes:
+    "za 1. miejsce — koszulka meczowa wybranego przez zwycięzcę klubu TAURON Ligi (spośród dostępnych u Organizatora), za 2. i 3. miejsce — mała piłka siatkowa Mikasa (po jednej).",
 };

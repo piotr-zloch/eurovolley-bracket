@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LegalDocument, { type LegalSection } from "@/components/LegalDocument";
 import { getLocale } from "@/lib/i18n-server";
-import { CONTEST, OPERATOR } from "@/lib/legal";
+import { CONTEST, LEGAL_DATE, OPERATOR } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Regulamin konkursu — Typer Szóstego Seta" };
 
@@ -40,7 +40,7 @@ export default async function ContestRulesPage() {
         "2. Ranking Jasnowidz powstaje z punktów za poprawne odpowiedzi na pytania o sezon (łącznie 36 pytań). Za każde pytanie przysługuje liczba punktów podana przy tym pytaniu. W przypadku pytań liczbowych punkty mogą być przyznawane za odpowiedź dokładną albo zbliżoną, zgodnie z opisem pytania.",
         "3. Poprawną odpowiedź na pytanie ustala Organizator na podstawie oficjalnych danych rozgrywek (wyniki, tabele i statystyki publikowane przez organizatora ligi) po zakończeniu sezonu lub odpowiedniego etapu. Organizator może uznać kilka odpowiedzi za poprawne, np. przy remisie.",
         "4. Jeśli pytanie stanie się nierozstrzygalne lub bezprzedmiotowe (np. z powodu zmiany formatu rozgrywek), Organizator może je unieważnić; punkty za nie nie są wtedy przyznawane nikomu.",
-        "5. Przy równej liczbie punktów o wyższym miejscu decyduje: [DO UZUPEŁNIENIA PRZEZ ORGANIZATORA: kryteria rozstrzygania remisów].",
+        "5. Przy równej liczbie punktów o wyższym miejscu decyduje: w Rankingu Typer — większa liczba punktów za typy meczowe; w Rankingu Jasnowidz — większa liczba poprawnych odpowiedzi. Jeśli remis nadal trwa, uczestnicy dzielą miejsce, a o przyznaniu nagrody rozstrzyga losowanie przeprowadzone przez Organizatora.",
         "6. Wyniki są dostępne w serwisie na bieżąco. Wyniki ostateczne ogłasza Organizator po zakończeniu sezonu w serwisie oraz w swoich kanałach w mediach społecznościowych.",
       ],
     },
@@ -51,7 +51,7 @@ export default async function ContestRulesPage() {
         "2. Nagrody nie podlegają wymianie na ekwiwalent pieniężny. Prawo do nagrody nie może być przeniesione na inną osobę.",
         "3. Organizator skontaktuje się ze zwycięzcami przez adres e-mail konta w ciągu 14 dni od ogłoszenia wyników. Jeśli zwycięzca nie odpowie w ciągu 14 dni od wysłania wiadomości, jego prawo do nagrody wygasa, a nagroda przechodzi na kolejną osobę w rankingu.",
         "4. Koszty wysyłki nagród na terenie Polski ponosi Organizator. Do odbioru nagrody niezbędne jest podanie danych potrzebnych do jej wydania (imię i nazwisko, adres do wysyłki); dane te służą wyłącznie do tego celu.",
-        "5. Organizator nie pobiera podatku od nagród w imieniu uczestnika i nie odpowiada za jego zobowiązania podatkowe, jeśli takie wynikają z przepisów. [DO WERYFIKACJI PRZEZ ORGANIZATORA: skutki podatkowe nagród, w zależności od ich wartości]",
+        "5. Organizator nie pobiera podatku od nagród w imieniu uczestnika i nie odpowiada za jego zobowiązania podatkowe, jeśli takie wynikają z przepisów.",
       ],
     },
     {
@@ -87,7 +87,7 @@ export default async function ContestRulesPage() {
   return (
     <LegalDocument
       title={`Regulamin konkursu „Typer Szóstego Seta — TAURON Liga ${CONTEST.season}”`}
-      version="Projekt do akceptacji przez Organizatora — nagrody i remisy do uzupełnienia"
+      version={`Wersja z dnia ${LEGAL_DATE}`}
       summary={
         locale === "en"
           ? `The binding text is in Polish. In short: a free skill-based prediction contest for the ${CONTEST.season} TAURON Liga season, two rankings (Typer and Jasnowidz). Season picks and Jasnowidz answers lock at the first ball (${CONTEST.firstBall}). The top 3 in each ranking win prizes; winners are contacted by e-mail.`
