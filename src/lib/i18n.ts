@@ -128,6 +128,29 @@ const pl = {
       errInvalidEmail: "Podaj poprawny adres e-mail.",
       errUsernameTaken: "Ta nazwa użytkownika jest już zajęta — wybierz inną.",
       errResetExpired: "Link do resetu hasła wygasł lub został już użyty. Poproś o nowy.",
+      acceptPrefix: "Akceptuję",
+      acceptTerms: "Regulamin serwisu",
+      acceptAnd: "oraz",
+      acceptContest: "Regulamin konkursu",
+      acceptPrivacy: "Zapoznałem(-am) się z Polityką prywatności",
+      errTermsRequired: "Aby założyć konto, zaakceptuj regulaminy.",
+      deleteTitle: "Usuń konto",
+      deleteHelp:
+        "Usunięcie konta jest trwałe: znikną Twoje typy, odpowiedzi i członkostwa w grupach. Grupy, których jesteś właścicielem, przejmie ich najdłużej należący członek (albo zostaną usunięte, jeśli nikt inny w nich nie jest).",
+      deleteConfirmLabel: "Wpisz USUŃ, aby potwierdzić",
+      deleteConfirmWord: "USUŃ",
+      deleteButton: "Usuń konto na stałe",
+      deleting: "Usuwanie…",
+      deleteAdmin: "Konta administratora nie można usunąć w ten sposób.",
+      deleteFailed: "Nie udało się usunąć konta. Spróbuj ponownie lub napisz do nas.",
+      accountDeleted: "Konto zostało usunięte.",
+    },
+
+    footer: {
+      terms: "Regulamin serwisu",
+      contest: "Regulamin konkursu",
+      privacy: "Polityka prywatności",
+      unofficial: "Nieoficjalny serwis kibiców, niezwiązany z PLS ani rozgrywkami TAURON Liga.",
     },
 
     welcome: {
@@ -605,7 +628,30 @@ const en: Dict = {
       errPasswordMismatch: "The passwords don't match.",
       errInvalidEmail: "Enter a valid email address.",
       errUsernameTaken: "That username is already taken — please pick another.",
+      acceptPrefix: "I accept the",
+      acceptTerms: "Terms of service",
+      acceptAnd: "and the",
+      acceptContest: "Contest rules",
+      acceptPrivacy: "I have read the Privacy policy",
+      errTermsRequired: "Accept the terms to create an account.",
+      deleteTitle: "Delete account",
+      deleteHelp:
+        "Deleting your account is permanent: your predictions, answers and group memberships are removed. Groups you own pass to their longest-standing member (or are deleted if nobody else is in them).",
+      deleteConfirmLabel: "Type DELETE to confirm",
+      deleteConfirmWord: "DELETE",
+      deleteButton: "Delete account permanently",
+      deleting: "Deleting…",
+      deleteAdmin: "An administrator account cannot be deleted this way.",
+      deleteFailed: "Could not delete the account. Try again or write to us.",
+      accountDeleted: "Your account has been deleted.",
       errResetExpired: "That reset link has expired or was already used. Request a new one.",
+    },
+
+    footer: {
+      terms: "Terms of service",
+      contest: "Contest rules",
+      privacy: "Privacy policy",
+      unofficial: "An unofficial fan site, not affiliated with PLS or the TAURON Liga organisers.",
     },
 
     welcome: {

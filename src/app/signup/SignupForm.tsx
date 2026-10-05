@@ -74,6 +74,24 @@ export default function SignupForm({
           autoComplete="new-password"
           dict={dict}
         />
+        <label className="flex items-start gap-2 text-sm text-gray-700">
+          <input type="checkbox" name="accept_terms" required className="mt-1" />
+          <span>
+            {t.acceptPrefix}{" "}
+            <Link href="/regulamin" target="_blank" className="text-blue-600 underline">
+              {t.acceptTerms}
+            </Link>{" "}
+            {t.acceptAnd}{" "}
+            <Link href="/regulamin-konkursu" target="_blank" className="text-blue-600 underline">
+              {t.acceptContest}
+            </Link>
+            .{" "}
+            <Link href="/polityka-prywatnosci" target="_blank" className="text-blue-600 underline">
+              {t.acceptPrivacy}
+            </Link>
+            .
+          </span>
+        </label>
         <SubmitButton pending={pending} label={t.signUp} pendingLabel={t.signingUp} />
       </form>
     </AuthCard>

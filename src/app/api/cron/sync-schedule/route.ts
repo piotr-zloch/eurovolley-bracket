@@ -30,6 +30,13 @@ export async function GET(request: NextRequest) {
 
   const slug = process.env.SCHEDULE_SYNC_SLUG ?? "plusliga-2026-27";
 
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+
+  // Housekeeping first, so a league-site outage cannot stop it: accounts unused for 12 months are
+  // deleted (migration 35; the policy is stated in the terms and privacy policy).
+  const purge = await supabase.rpc("purge_inactive_accounts", { p_secret: secret });
+  if (purge.error) console.error(`purge_inactive_accounts failed: ${purge.error.message}`);
+
   let html: string;
   try {
     const res = await fetch(SOURCE, {
@@ -49,8 +56,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "no games found on the schedule page (layout changed?)" }, { status: 502 });
   }
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
-
   // Independent calls: a problem with one (say, results) must not stop the other from applying.
   const schedule = await supabase.rpc("sync_league_schedule", {
     p_secret: secret,
@@ -66,10 +71,17 @@ export async function GET(request: NextRequest) {
   const errors = [
     schedule.error && `schedule: ${schedule.error.message}`,
     results.error && `results: ${results.error.message}`,
+    purge.error && `purge: ${purge.error.message}`,
   ].filter(Boolean);
 
   return NextResponse.json(
-    { parsed: games.length, schedule: schedule.data ?? null, results: results.data ?? null, errors },
+    {
+      parsed: games.length,
+      schedule: schedule.data ?? null,
+      results: results.data ?? null,
+      purge: purge.data ?? null,
+      errors,
+    },
     { status: errors.length > 0 ? 500 : 200 }
   );
 }

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getDict } from "@/lib/i18n-server";
+import { LEGAL_VERSION } from "@/lib/legal";
 import { normalizeUsername, validateUsername } from "@/lib/username";
 
 /**
@@ -66,6 +67,11 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     return { error: dict.auth.errPasswordMismatch, values: keep };
   }
 
+  // Acceptance is required by the checkbox, and re-checked here because the client can be bypassed.
+  if (formData.get("accept_terms") !== "on") {
+    return { error: dict.auth.errTermsRequired, values: keep };
+  }
+
   // Enforced server-side, not just via the form's `required`: the username is the only public
   // identity in the app and must never fall back to the email.
   const problem = validateUsername(username);
@@ -84,7 +90,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     email,
     password,
     options: {
-      data: { username },
+      data: { username, terms_version: LEGAL_VERSION, terms_accepted_at: new Date().toISOString() },
       emailRedirectTo: origin ? `${origin}/auth/callback?next=/predictions` : undefined,
     },
   });
@@ -184,6 +190,29 @@ export async function changePassword(_prev: AuthState, formData: FormData): Prom
   // on, and bouncing them elsewhere would lose the confirmation.
   revalidatePath("/", "layout");
   return { success: dict.auth.passwordChanged };
+}
+
+/**
+ * Permanent self-service deletion (RODO art. 17). The database function does the work and refuses
+ * admin accounts; the typed confirmation is re-checked here because the client can be bypassed.
+ */
+export async function deleteAccount(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const dict = await getDict();
+  const typed = ((formData.get("confirm") as string) ?? "").trim().toUpperCase();
+  if (typed !== dict.auth.deleteConfirmWord) return { error: dict.auth.deleteFailed };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) {
+    return {
+      error: error.message.includes("administrator") ? dict.auth.deleteAdmin : dict.auth.deleteFailed,
+    };
+  }
+
+  // The user row is gone, so the stored session is dead; clear the cookie locally.
+  await supabase.auth.signOut({ scope: "local" });
+  revalidatePath("/", "layout");
+  redirect(`/login?message=${encodeURIComponent(dict.auth.accountDeleted)}`);
 }
 
 export async function signOut() {

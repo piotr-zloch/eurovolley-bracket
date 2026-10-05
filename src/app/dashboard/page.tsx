@@ -4,6 +4,7 @@ import { getDict } from "@/lib/i18n-server";
 import { USERNAME_MAX, USERNAME_MIN } from "@/lib/username";
 import { createGroup, joinGroup, updateUsername } from "./actions";
 import ChangePasswordForm from "./ChangePasswordForm";
+import DeleteAccountForm from "./DeleteAccountForm";
 
 export default async function DashboardPage({
   searchParams,
@@ -118,6 +119,8 @@ export default async function DashboardPage({
           {t.back}
         </Link>
       </div>
+
+      <DeleteAccountForm dict={dict} />
     </div>
   );
 }
