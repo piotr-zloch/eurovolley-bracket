@@ -232,21 +232,13 @@ export default function MatchList({
     codes.forEach((code) => {
       buckets.push({ key: `g${code}`, title: fmt(dict.groupLabel, { code }), rows: rows.filter((m) => m.groupCode === code) });
     });
-    // Games played well before their round come first, as their own blocks, so the list stays in
-    // time order; the rest of that round keeps its place by round number.
-    const { early, regular } = orderRounds(rows, roundMedianDates);
-    early.forEach((r) => {
+    // One block per round, plus a separate block for games played well before their round; all
+    // sorted by earliest game so the list stays in time order.
+    orderRounds(rows, roundMedianDates).forEach(({ round: r, early }) => {
       buckets.push({
-        key: `e${r}`,
-        title: fmt(t.movedEarlier, { n: r }),
-        rows: rows.filter((m) => m.round === r && isMovedEarly(m, roundMedianDates)),
-      });
-    });
-    regular.forEach((r) => {
-      buckets.push({
-        key: `r${r}`,
-        title: fmt(t.roundLabel, { n: r }),
-        rows: rows.filter((m) => m.round === r && !isMovedEarly(m, roundMedianDates)),
+        key: `${early ? "e" : "r"}${r}`,
+        title: fmt(early ? t.movedEarlier : t.roundLabel, { n: r }),
+        rows: rows.filter((m) => m.round === r && isMovedEarly(m, roundMedianDates) === early),
       });
     });
     const knockout = rows.filter((m) => !m.groupCode && m.round === null);
