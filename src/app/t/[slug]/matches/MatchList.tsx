@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { fmt, type Dict } from "@/lib/i18n";
+import { isMovedEarly, orderRounds, roundMedians } from "@/lib/round-buckets";
 import { saveMatchPredictions } from "./actions";
 
 export type MatchRow = {
@@ -221,6 +222,8 @@ export default function MatchList({
   const soon = upcoming.filter((m) => m.soon);
   const later = upcoming.filter((m) => !m.soon);
 
+  const roundMedianDates = roundMedians(matches);
+
   // Groups first in A–D order, then league rounds, then any knockout match already carrying teams.
   type Bucket = { key: string; title: string; rows: MatchRow[]; knockout?: boolean };
   function bucketize(rows: MatchRow[]): Bucket[] {
@@ -229,9 +232,22 @@ export default function MatchList({
     codes.forEach((code) => {
       buckets.push({ key: `g${code}`, title: fmt(dict.groupLabel, { code }), rows: rows.filter((m) => m.groupCode === code) });
     });
-    const rounds = [...new Set(rows.map((m) => m.round).filter((r): r is number => r !== null))].sort((a, b) => a - b);
-    rounds.forEach((r) => {
-      buckets.push({ key: `r${r}`, title: fmt(t.roundLabel, { n: r }), rows: rows.filter((m) => m.round === r) });
+    // Games played well before their round come first, as their own blocks, so the list stays in
+    // time order; the rest of that round keeps its place by round number.
+    const { early, regular } = orderRounds(rows, roundMedianDates);
+    early.forEach((r) => {
+      buckets.push({
+        key: `e${r}`,
+        title: fmt(t.movedEarlier, { n: r }),
+        rows: rows.filter((m) => m.round === r && isMovedEarly(m, roundMedianDates)),
+      });
+    });
+    regular.forEach((r) => {
+      buckets.push({
+        key: `r${r}`,
+        title: fmt(t.roundLabel, { n: r }),
+        rows: rows.filter((m) => m.round === r && !isMovedEarly(m, roundMedianDates)),
+      });
     });
     const knockout = rows.filter((m) => !m.groupCode && m.round === null);
     if (knockout.length > 0) buckets.push({ key: "ko", title: t.knockoutLabel, rows: knockout, knockout: true });
