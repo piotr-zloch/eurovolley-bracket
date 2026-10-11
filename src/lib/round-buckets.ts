@@ -42,25 +42,25 @@ export function isMovedEarly(r: RoundRow, medians: Map<number, number>): boolean
 }
 
 /**
- * Round numbers in display order: early blocks first (by earliest game), then the rest by round.
- * `early` and `regular` are the rounds that actually have rows of that kind.
+ * League blocks in display order: one per round for its regular games, plus one per round for the
+ * games moved early, all sorted by their earliest game so the list reads in time order (a game
+ * moved from round 5 to 27.10 lands between the round played on 25.10 and the one on 29.10).
+ * Ties fall back to round number, with the regular block first.
  */
 export function orderRounds<T extends RoundRow>(
   rows: T[],
   medians: Map<number, number>
-): { early: number[]; regular: number[] } {
-  const early = new Map<number, number>();
-  const regular = new Set<number>();
+): { round: number; early: boolean }[] {
+  const first = new Map<string, { round: number; early: boolean; at: number }>();
   for (const r of rows) {
+    const t = when(r);
     if (r.round === null) continue;
-    if (isMovedEarly(r, medians)) {
-      early.set(r.round, Math.min(early.get(r.round) ?? Infinity, when(r)!));
-    } else {
-      regular.add(r.round);
-    }
+    const early = isMovedEarly(r, medians);
+    const key = `${early ? "e" : "r"}${r.round}`;
+    const at = Math.min(first.get(key)?.at ?? Infinity, t ?? Infinity);
+    first.set(key, { round: r.round, early, at });
   }
-  return {
-    early: [...early.entries()].sort((a, b) => a[1] - b[1] || a[0] - b[0]).map(([n]) => n),
-    regular: [...regular].sort((a, b) => a - b),
-  };
+  return [...first.values()]
+    .sort((a, b) => a.at - b.at || a.round - b.round || Number(a.early) - Number(b.early))
+    .map(({ round, early }) => ({ round, early }));
 }
