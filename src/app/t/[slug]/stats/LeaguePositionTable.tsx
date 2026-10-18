@@ -85,7 +85,7 @@ export default function LeaguePositionTable({
         <table className={`text-sm ${showAggregates ? "w-full table-fixed" : "w-full max-w-md"}`}>
           {showAggregates && (
             <colgroup>
-              <col className="w-44" />
+              <col className="w-60" />
               <col className="w-10" />
               <col className="w-16" />
               <col className="w-20" />
@@ -143,7 +143,7 @@ export default function LeaguePositionTable({
 
               return (
                 <tr key={row.groupTeamsId} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap px-3 py-2 font-medium">{row.teamName}</td>
+                  <td className="px-3 py-2 font-medium break-words">{row.teamName}</td>
                   {showAggregates && (
                     <td className="px-3 py-2 text-center text-gray-500">{row.actualPosition ?? "—"}</td>
                   )}
