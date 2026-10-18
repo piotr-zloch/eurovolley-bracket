@@ -146,6 +146,8 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
     timeStyle: "short",
     timeZone: "Europe/Warsaw",
   }).format(new Date(tournament.prediction_deadline));
+  const showBracketStats =
+    !isLeague || Date.now() >= new Date("2027-03-01T00:00:00+01:00").getTime();
 
   // Nothing at all before typing closes: no table, no distributions, not even the player's own
   // picks. Returning here also means none of the statistics are loaded or sent.
@@ -458,6 +460,126 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-2xl font-bold">{dict.nav.stats}</h1>
 
+      {/* ── Match predictions ────────────────────────────────────────────────── */}
+      <CollapsibleSection title={t.predSummaryTitle} subtitle={t.predSummaryIntro}>
+        {matchRows.length === 0 ? (
+          <p className="text-gray-500">{t.predSummaryNoData}</p>
+        ) : (
+          <>
+            <div className="mb-4 flex flex-wrap gap-2 text-xs">
+              {[
+                { pts: 5, cell: "bg-green-600 text-white",      label: dict.rules.matchExact },
+                { pts: 4, cell: "bg-green-100 text-green-800",  label: dict.rules.matchNear },
+                { pts: 3, cell: "bg-yellow-100 text-yellow-800",label: dict.rules.matchFive },
+                { pts: 2, cell: "bg-orange-100 text-orange-800",label: dict.rules.matchWrongFive },
+                { pts: 0, cell: "bg-red-100 text-red-700",      label: dict.rules.matchOther },
+              ].map(({ pts, cell, label }) => (
+                <span key={pts} className="flex items-center gap-1.5">
+                  <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-medium ${cell}`}>
+                    {pts} {dict.rules.pts}
+                  </span>
+                  <span className="text-gray-500">{label}</span>
+                </span>
+              ))}
+            </div>
+            <div className="overflow-x-auto rounded border">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    <th className="px-3 py-2 whitespace-nowrap">{t.predSummaryMatch}</th>
+                    <th className="px-3 py-2 whitespace-nowrap">{t.predSummaryDate}</th>
+                    <th className="px-3 py-2 whitespace-nowrap text-center">{t.predSummaryResult}</th>
+                    <th className="px-3 py-2 whitespace-nowrap text-center border-l border-blue-200 bg-blue-50">
+                      {t.predSummaryYourPick}
+                    </th>
+                    <th className="px-3 py-2 whitespace-nowrap text-center bg-blue-50">
+                      {t.predSummaryYourPts}
+                    </th>
+                    <th className="px-3 py-2 whitespace-nowrap text-center bg-blue-50 border-r border-blue-200">
+                      {t.predSummaryVsAvg}
+                    </th>
+                    {SCORES.map((s) => (
+                      <th key={s} className="px-3 py-2 text-center whitespace-nowrap">{s}</th>
+                    ))}
+                    <th className="px-3 py-2 text-center whitespace-nowrap">{t.predSummaryTotal}</th>
+                    <th className="px-3 py-2 text-center whitespace-nowrap">{t.predSummaryAvg}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {matchRows.map((row) => {
+                    const diff =
+                      row.myPts !== null && row.avgPts !== null ? row.myPts - row.avgPts : null;
+                    const diffLabel =
+                      diff === null ? "—" : diff > 0 ? `+${diff.toFixed(1)}` : diff < 0 ? diff.toFixed(1) : "=";
+                    const diffClass =
+                      diff === null
+                        ? "text-gray-300"
+                        : diff > 0
+                        ? "text-green-700 font-semibold"
+                        : diff < 0
+                        ? "text-red-600 font-semibold"
+                        : "text-gray-500";
+
+                    return (
+                      <tr key={row.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 whitespace-nowrap font-medium">
+                          {row.homeName} – {row.awayName}
+                          {row.groupCode && (
+                            <span className="ml-2 text-xs font-normal text-gray-400">
+                              Gr. {row.groupCode}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-gray-500 text-xs">
+                          {row.scheduledAt ?? "—"}
+                        </td>
+                        <td className="px-3 py-2 text-center font-mono font-semibold whitespace-nowrap">
+                          {row.actualScore ?? "—"}
+                        </td>
+                        <td className={`px-3 py-2 text-center font-mono whitespace-nowrap border-l border-blue-200 ${pickCellClass(row.myPts)}`}>
+                          {row.myPick ?? "—"}
+                        </td>
+                        <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50">
+                          {row.myPts !== null ? row.myPts : "—"}
+                        </td>
+                        <td className={`px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50 border-r border-blue-200 ${diffClass}`}>
+                          {diffLabel}
+                        </td>
+                        {SCORES.map((s) => {
+                          const count = row.counts[s] ?? 0;
+                          const isCorrect = s === row.actualScore;
+                          const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
+                          return (
+                            <td
+                              key={s}
+                              className={`px-3 py-2 text-center whitespace-nowrap tabular-nums ${
+                                isCorrect
+                                  ? "bg-green-100 font-semibold text-green-800"
+                                  : count === 0
+                                  ? "text-gray-300"
+                                  : ""
+                              }`}
+                            >
+                              {count === 0 ? "—" : `${pct}%`}
+                            </td>
+                          );
+                        })}
+                        <td className="px-3 py-2 text-center whitespace-nowrap text-gray-500">
+                          {row.total === 0 ? "—" : row.total}
+                        </td>
+                        <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums">
+                          {row.avgPts !== null ? row.avgPts.toFixed(1) : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </CollapsibleSection>
+
       {/* ── Group stage ──────────────────────────────────────────────────────── */}
       <CollapsibleSection
         title={isLeague ? t.groupStatsTitleLeague : t.groupStatsTitle}
@@ -597,127 +719,8 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
         )}
       </CollapsibleSection>
 
-      {/* ── Match predictions ────────────────────────────────────────────────── */}
-      <CollapsibleSection title={t.predSummaryTitle} subtitle={t.predSummaryIntro}>
-        {matchRows.length === 0 ? (
-          <p className="text-gray-500">{t.predSummaryNoData}</p>
-        ) : (
-          <>
-            <div className="mb-4 flex flex-wrap gap-2 text-xs">
-              {[
-                { pts: 5, cell: "bg-green-600 text-white",      label: dict.rules.matchExact },
-                { pts: 4, cell: "bg-green-100 text-green-800",  label: dict.rules.matchNear },
-                { pts: 3, cell: "bg-yellow-100 text-yellow-800",label: dict.rules.matchFive },
-                { pts: 2, cell: "bg-orange-100 text-orange-800",label: dict.rules.matchWrongFive },
-                { pts: 0, cell: "bg-red-100 text-red-700",      label: dict.rules.matchOther },
-              ].map(({ pts, cell, label }) => (
-                <span key={pts} className="flex items-center gap-1.5">
-                  <span className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 font-mono text-xs font-medium ${cell}`}>
-                    {pts} {dict.rules.pts}
-                  </span>
-                  <span className="text-gray-500">{label}</span>
-                </span>
-              ))}
-            </div>
-            <div className="overflow-x-auto rounded border">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    <th className="px-3 py-2 whitespace-nowrap">{t.predSummaryMatch}</th>
-                    <th className="px-3 py-2 whitespace-nowrap">{t.predSummaryDate}</th>
-                    <th className="px-3 py-2 whitespace-nowrap text-center">{t.predSummaryResult}</th>
-                    <th className="px-3 py-2 whitespace-nowrap text-center border-l border-blue-200 bg-blue-50">
-                      {t.predSummaryYourPick}
-                    </th>
-                    <th className="px-3 py-2 whitespace-nowrap text-center bg-blue-50">
-                      {t.predSummaryYourPts}
-                    </th>
-                    <th className="px-3 py-2 whitespace-nowrap text-center bg-blue-50 border-r border-blue-200">
-                      {t.predSummaryVsAvg}
-                    </th>
-                    {SCORES.map((s) => (
-                      <th key={s} className="px-3 py-2 text-center whitespace-nowrap">{s}</th>
-                    ))}
-                    <th className="px-3 py-2 text-center whitespace-nowrap">{t.predSummaryTotal}</th>
-                    <th className="px-3 py-2 text-center whitespace-nowrap">{t.predSummaryAvg}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {matchRows.map((row) => {
-                    const diff =
-                      row.myPts !== null && row.avgPts !== null ? row.myPts - row.avgPts : null;
-                    const diffLabel =
-                      diff === null ? "—" : diff > 0 ? `+${diff.toFixed(1)}` : diff < 0 ? diff.toFixed(1) : "=";
-                    const diffClass =
-                      diff === null
-                        ? "text-gray-300"
-                        : diff > 0
-                        ? "text-green-700 font-semibold"
-                        : diff < 0
-                        ? "text-red-600 font-semibold"
-                        : "text-gray-500";
-
-                    return (
-                      <tr key={row.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap font-medium">
-                          {row.homeName} – {row.awayName}
-                          {row.groupCode && (
-                            <span className="ml-2 text-xs font-normal text-gray-400">
-                              Gr. {row.groupCode}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-500 text-xs">
-                          {row.scheduledAt ?? "—"}
-                        </td>
-                        <td className="px-3 py-2 text-center font-mono font-semibold whitespace-nowrap">
-                          {row.actualScore ?? "—"}
-                        </td>
-                        <td className={`px-3 py-2 text-center font-mono whitespace-nowrap border-l border-blue-200 ${pickCellClass(row.myPts)}`}>
-                          {row.myPick ?? "—"}
-                        </td>
-                        <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50">
-                          {row.myPts !== null ? row.myPts : "—"}
-                        </td>
-                        <td className={`px-3 py-2 text-center whitespace-nowrap tabular-nums bg-blue-50 border-r border-blue-200 ${diffClass}`}>
-                          {diffLabel}
-                        </td>
-                        {SCORES.map((s) => {
-                          const count = row.counts[s] ?? 0;
-                          const isCorrect = s === row.actualScore;
-                          const pct = row.total > 0 ? Math.round((count / row.total) * 100) : 0;
-                          return (
-                            <td
-                              key={s}
-                              className={`px-3 py-2 text-center whitespace-nowrap tabular-nums ${
-                                isCorrect
-                                  ? "bg-green-100 font-semibold text-green-800"
-                                  : count === 0
-                                  ? "text-gray-300"
-                                  : ""
-                              }`}
-                            >
-                              {count === 0 ? "—" : `${pct}%`}
-                            </td>
-                          );
-                        })}
-                        <td className="px-3 py-2 text-center whitespace-nowrap text-gray-500">
-                          {row.total === 0 ? "—" : row.total}
-                        </td>
-                        <td className="px-3 py-2 text-center whitespace-nowrap tabular-nums">
-                          {row.avgPts !== null ? row.avgPts.toFixed(1) : "—"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
-      </CollapsibleSection>
-
       {/* ── Bracket predictions ──────────────────────────────────────────────── */}
+      {showBracketStats && (
       <CollapsibleSection
         title={isLeague ? t.bracketStatsTitleLeague : t.bracketStatsTitle}
         subtitle={isLeague ? t.bracketStatsIntroLeague : t.bracketStatsIntro}
@@ -909,6 +912,7 @@ export default async function StatsPage({ params }: { params: Promise<{ slug: st
           </div>
         )}
       </CollapsibleSection>
+      )}
     </div>
   );
 }
